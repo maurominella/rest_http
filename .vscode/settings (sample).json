@@ -1,0 +1,40 @@
+{
+    "rest-client.environmentVariables": {
+        "dev": {
+            "subscription_id": "***",
+            "azure_search_endpoint": "https://****.search.windows.net",
+            "aisearch_key": "*****",
+            "storage_account_name": "****",
+            "container_name": "****",
+            "storage_account_key": "***********==",
+            "openai_endpoint": "https://*****.openai.azure.com/",
+            "openai_api_key": "*****",
+            "cognitive_service_name": "*****",
+            "cognitive_service_key": "*****"
+        },
+        "staging": {
+            "subscription_id": "",
+            "azure_search_endpoint": "",
+            "aisearch_key": "",
+            "storage_account_name": "",
+            "container_name": "",
+            "storage_account_key": "",
+            "openai_endpoint": "",
+            "openai_api_key": "",
+            "cognitive_service_name": "",
+            "cognitive_service_key": ""
+        },
+        "production": {
+            "subscription_id": "",
+            "azure_search_endpoint": "",
+            "aisearch_key": "",
+            "storage_account_name": "",
+            "container_name": "",
+            "storage_account_key": "",
+            "openai_endpoint": "",
+            "openai_api_key": "",
+            "cognitive_service_name": "",
+            "cognitive_service_key": ""
+        }
+    }
+}

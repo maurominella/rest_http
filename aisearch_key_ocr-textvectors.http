@@ -1,16 +1,20 @@
 # Azure Search Tests 
-@resource_group_name  = mmai01-rg
-@aisearch_api_version = 2024-09-01-preview
-@datasource_name      = mm-datasource
-@index_name           = mm-index
-@skillset_name        = mm-skillset
-@indexer_name         = mm-indexer
+@resource_group_name  = genaihackgrp
+@aisearch_api_version = 2024-11-01-preview
+@datasource_name      = my-datasource
+@index_name           = my-index
+@skillset_name        = my-skillset
+@indexer_name         = my-indexer
 @storage_connection_string_mi  = ResourceId=/subscriptions/{{subscription_id}}/resourceGroups/{{resource_group_name}}/providers/Microsoft.Storage/storageAccounts/{{storage_account_name}};
 @storage_connection_string_key = DefaultEndpointsProtocol=https;AccountName={{storage_account_name}};AccountKey={{storage_account_key}};EndpointSuffix=core.windows.net
+@cognitive_service_endpoint = https://{{cognitive_service_name}}.cognitiveservices.azure.com
 @vector_semantic_configuration = vector-{{index_name}}-semantic-configuration
 @vector_text_search_profile    = vector-{{index_name}}-openai-text-profile
 @vector_text_search_profile_algorithm = {{vector_text_search_profile}}-algorithm
 @vector_text_search_profile_vectorizer = {{vector_text_search_profile}}-vectorizer
+@vector_image_search_profile = vector-{{index_name}}-vision-image-profile
+@vector_image_search_profile_algorithm = {{vector_image_search_profile}}-algorithm
+@vector_image_search_profile_vectorizer = {{vector_image_search_profile}}-vectorizer
 
 
 ### DataSource creation with dataChangeDetectionPolicy and dataDeletionDetectionPolicy
@@ -22,10 +26,11 @@ api-key: {{aisearch_key}}
     "name": "{{datasource_name}}",
     "type": "azureblob",
     "credentials": {  
-        "connectionString": "{{storage_connection_string_mi}}"
+        "connectionString": "{{storage_connection_string_key}}"
     },
     "container": {  
-        "name": "{{container_name}}"
+        "name": "{{container_name}}",
+        "query": "{{folder_name}}"
     },
     "dataChangeDetectionPolicy": {  
         "@odata.type": "#Microsoft.Azure.Search.HighWaterMarkChangeDetectionPolicy",
@@ -59,7 +64,7 @@ api-key: {{aisearch_key}}
       "synonymMaps": []
     },
     {
-      "name": "parent_id",
+      "name": "text_parent_id",
       "type": "Edm.String",
       "key": false,
       "retrievable": true,
@@ -163,9 +168,9 @@ api-key: {{aisearch_key}}
         "kind": "azureOpenAI",
         "azureOpenAIParameters": {
           "resourceUri": "{{openai_endpoint}}",
-          "deploymentId": "text-embedding-ada-002",
           "apiKey": "{{openai_api_key}}",
-          "modelName": "text-embedding-ada-002"
+          "modelName": "{{openai_model}}",
+          "deploymentId": "{{openai_deployment}}"
         }
       }
     ],
@@ -175,7 +180,7 @@ api-key: {{aisearch_key}}
 
 
 ### Create a Skillset
-PUT {{azure_search_endpoint}}/skillsets/{{skillset_name}}?api-version={{aisearch_api_version}}
+PUT {{azure_search_endpoint}}/skillsets/{{skillset_name}}?api-version=2024-11-01-preview
 Content-Type: application/json
 api-key: {{aisearch_key}}
 
@@ -276,22 +281,22 @@ api-key: {{aisearch_key}}
         }
       ],
       "resourceUri": "{{openai_endpoint}}",
-      "deploymentId": "text-embedding-ada-002",
       "apiKey": "{{openai_api_key}}",
+      "deploymentId": "text-embedding-ada-002",
       "modelName": "text-embedding-ada-002",
       "dimensions": 1536
     }
   ],
   "cognitiveServices": {
     "@odata.type": "#Microsoft.Azure.Search.CognitiveServicesByKey",
-    "description": "all in one Cognitive Service {{cognitive_service_name}}",
+    "description": "Cognitive Service {{cognitive_service_name}}",
     "key": "{{cognitive_service_key}}"
   },
   "indexProjections": {
     "selectors": [
       {
         "targetIndexName": "{{index_name}}",
-        "parentKeyFieldName": "parent_id",
+        "parentKeyFieldName": "text_parent_id",
         "sourceContext": "/document/pages/*",
         "mappings": [
           {

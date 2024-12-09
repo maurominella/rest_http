@@ -209,8 +209,8 @@ api-key: {{aisearch_key}}
         "kind": "azureOpenAI",
         "azureOpenAIParameters": {
           "resourceUri": "{{openai_endpoint}}",
-          "deploymentId": "text-embedding-ada-002",
-          "modelName": "text-embedding-ada-002"
+          "modelName": "{{openai_model}}",
+          "deploymentId": "{{openai_deployment}}"
         }
       },
       {
@@ -330,8 +330,8 @@ api-key: {{aisearch_key}}
         }
       ],
       "resourceUri": "{{openai_endpoint}}",
-      "deploymentId": "text-embedding-ada-002",
-      "modelName": "text-embedding-ada-002",
+      "modelName": "{{openai_model}}",
+      "deploymentId": "{{openai_deployment}}",
       "dimensions": 1536
     },
     {
