@@ -3,10 +3,13 @@
 
 # $token=$(az account get-access-token --query accessToken --output tsv)
 
+# variables:
+# - subscription_id
+# - backendBal1-openai-key
+# - backendBal2-openai-key
 
-@Token             = ***
+@Token             = eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6Inp4ZWcyV09OcFRrd041R21lWWN1VGR0QzZKMCIsImtpZCI6Inp4ZWcyV09OcFRrd041R21lWWN1VGR0QzZKMCJ9.eyJhdWQiOiJodHRwczovL21hbmFnZW1lbnQuY29yZS53aW5kb3dzLm5ldC8iLCJpc3MiOiJodHRwczovL3N0cy53aW5kb3dzLm5ldC8zYWQwYjkwNS0zNGFiLTQxMTYtOTNkOS1jMWRjYzJkMzVhZjYvIiwiaWF0IjoxNzM0NTM0ODEyLCJuYmYiOjE3MzQ1MzQ4MTIsImV4cCI6MTczNDUzOTg2MywiYWNyIjoiMSIsImFpbyI6IkFWUUFxLzhZQUFBQU5ld0NRbk9PeDhSc1B0bGZ1NnZyT20za2kxL2krM1IwVTdhZEtBUUhWcVMwYm1qMFBaUklaZEpBSlFFZUFjdUExSWZwbTRKNzUyUjYwU2dXQURLUjdVb3F6VUtFc3NRbG5UeTBqdlFoWVZnPSIsImFtciI6WyJwd2QiLCJtZmEiXSwiYXBwaWQiOiIwNGIwNzc5NS04ZGRiLTQ2MWEtYmJlZS0wMmY5ZTFiZjdiNDYiLCJhcHBpZGFjciI6IjAiLCJmYW1pbHlfbmFtZSI6Ik1pbmVsbGEiLCJnaXZlbl9uYW1lIjoiTWF1cm8iLCJncm91cHMiOlsiOWQ1NmZmNGUtNjI5My00MGM1LTg2ZmQtZWYyODVhZTlmNTY0IiwiYzNkYTQyOTEtOWExOC00NDI5LWE1ZjktOTlhYjFiMDU4NzUzIl0sImlkdHlwIjoidXNlciIsImlwYWRkciI6IjJhMDE6MTEwOjgwMTI6MTAxMDphMTdiOmRlMjg6ZTc3ZjplZmYzIiwibmFtZSI6Ik1hdXJvIE1pbmVsbGEiLCJvaWQiOiI2OGM0YmYxZS03YzQ5LTRmOTItYThmNS0wZDMzMTgzMWM1MWEiLCJwdWlkIjoiMTAwMzIwMDNBQUZDOThDOSIsInJoIjoiMS5BYjBBQmJuUU9xczBGa0dUMmNIY3d0TmE5a1pJZjNrQXV0ZFB1a1Bhd2ZqMk1CTURBVUs5QUEuIiwic2NwIjoidXNlcl9pbXBlcnNvbmF0aW9uIiwic3ViIjoibzcydS0yc0RLWU1HalVvaWNlUTJ5OHoyV3dwaVlobVlyaEplY0ZnRVlGWSIsInRpZCI6IjNhZDBiOTA1LTM0YWItNDExNi05M2Q5LWMxZGNjMmQzNWFmNiIsInVuaXF1ZV9uYW1lIjoibWF1cm8ubWluZWxsYUBNbmdFbnZNQ0FQODgzNjUyLm9ubWljcm9zb2Z0LmNvbSIsInVwbiI6Im1hdXJvLm1pbmVsbGFATW5nRW52TUNBUDg4MzY1Mi5vbm1pY3Jvc29mdC5jb20iLCJ1dGkiOiJCZENWVHhqM3kwU1RvYjVzVHVDaEFBIiwidmVyIjoiMS4wIiwid2lkcyI6WyIxNThjMDQ3YS1jOTA3LTQ1NTYtYjdlZi00NDY1NTFhNmI1ZjciLCI2MmU5MDM5NC02OWY1LTQyMzctOTE5MC0wMTIxNzcxNDVlMTAiLCJiNzlmYmY0ZC0zZWY5LTQ2ODktODE0My03NmIxOTRlODU1MDkiXSwieG1zX2lkcmVsIjoiMSAyNiIsInhtc190Y2R0IjoxNzIxNzc2NjE4fQ.JZxki-cRCy6C_yajjRuBnqZhe41004zDA7YWV14OMLtO2cIgk_YcuR5sxqtWWTc8PMFs7eyt4ezUYzTILHe87AVzKI4WZ7QqiJ1qOhjg_PiAmPbFPKyxlQ4ZeyPkXVsIj7jYiIrZGflCiGrMplYE6ow7bBqoJMH4ZurLMtIcQYYqKS8Cgb3PrWNJDTLjCK1YcqTMHlXToCLnv7zaPoTrNG8kbA-Lu7-N7AIDWU3SkkrldYJMEPJDR4HimprcGHWZ8NMLyxgJyOffFeYLJDWwT6fd2mqsuulbX7JQdtvI6XqS51O-KfKtMd8bAvUYCaEvwUBF4oKiRv4Is8vgkRTqxw
 
-@subscriptionId    = ***
 @resourceGroupName = genaihackgrp
 @apimName          = genaihackapim
 
@@ -14,11 +17,9 @@
 
 @backendBal1       = backend-openai-main
 @backendBal1-url   = https://mmoaiswc-01.openai.azure.com/
-@backendBal1-openai-key = ***
 
 @backendBal2       = backend-openai-fallback
 @backendBal2-url   = https://mmoaiscus-01.openai.azure.com/
-@backendBal2-openai-key = ***
 
 # 2023-09-01-preview, 2024-05-01-preview, 2024-05-01 or 2024-06-01-preview or 
 @apim-api-version   = 2024-06-01-preview
@@ -26,19 +27,19 @@
 @opeanai-api-version = 2024-05-01-preview
 
 # ALL Backends Retrieval using GET
-GET https://management.azure.com/subscriptions/{{subscriptionId}}/resourceGroups/{{resourceGroupName}}/providers/Microsoft.ApiManagement/service/{{apimName}}/backends?api-version={{apim-api-version}}
+GET https://management.azure.com/subscriptions/{{subscription_id}}/resourceGroups/{{resourceGroupName}}/providers/Microsoft.ApiManagement/service/{{apimName}}/backends?api-version={{apim-api-version}}
 Authorization: Bearer {{Token}}
 
 ###
 # SPECIFIC Backend Retrieval using GET
 @backendToRetrieve={{backendPool}}
-GET https://management.azure.com/subscriptions/{{subscriptionId}}/resourceGroups/{{resourceGroupName}}/providers/Microsoft.ApiManagement/service/{{apimName}}/backends/aaa-openai-endpoint?api-version={{apim-api-version}}
+GET https://management.azure.com/subscriptions/{{subscription_id}}/resourceGroups/{{resourceGroupName}}/providers/Microsoft.ApiManagement/service/{{apimName}}/backends/aaa-openai-endpoint?api-version={{apim-api-version}}
 Authorization: Bearer {{Token}}
 
 ###
 
 # Backend Creation - Main with Circuit Breaker - using Managed Identity authentication
-PUT https://management.azure.com/subscriptions/{{subscriptionId}}/resourceGroups/{{resourceGroupName}}/providers/Microsoft.ApiManagement/service/{{apimName}}/backends/{{backendBal1}}?api-version={{apim-api-version}}
+PUT https://management.azure.com/subscriptions/{{subscription_id}}/resourceGroups/{{resourceGroupName}}/providers/Microsoft.ApiManagement/service/{{apimName}}/backends/{{backendBal1}}?api-version={{apim-api-version}}
 Authorization: Bearer {{Token}}
 Content-Type: application/json
 
@@ -46,7 +47,7 @@ Content-Type: application/json
   "properties": {
     "title": "{{backendBal1}}",
     "description": "{{backendBal1}}",
-    "url": "{{backendBal1-url}}",
+    "url": "{{backendBal1-url}}openai",
     "protocol": "http",
     "tls": {
       "validateCertificateChain": true,
@@ -75,8 +76,92 @@ Content-Type: application/json
 }
 ###
 
+# Backend Creation - Fallback (no restrictions) - using Managed Identity authentication
+PUT https://management.azure.com/subscriptions/{{subscription_id}}/resourceGroups/{{resourceGroupName}}/providers/Microsoft.ApiManagement/service/{{apimName}}/backends/{{backendBal2}}?api-version={{apim-api-version}}
+Authorization: Bearer {{Token}}
+Content-Type: application/json
+
+{
+  "properties": {
+    "title": "{{backendBal2}}",
+    "description": "{{backendBal2}}",
+    "url": "{{backendBal2-url}}openai",
+    "protocol": "http",
+    "tls": {
+      "validateCertificateChain": true,
+      "validateCertificateName": true
+    }
+  }
+}
+
+###
+
+# Backend Pool Creation or Update using PUT
+PUT https://management.azure.com/subscriptions/{{subscription_id}}/resourceGroups/{{resourceGroupName}}/providers/Microsoft.ApiManagement/service/{{apimName}}/backends/{{backendPool}}?api-version={{apim-api-version}}
+Authorization: Bearer {{Token}}
+Content-Type: application/json
+
+{
+  "type": "Microsoft.ApiManagement/service/backends",
+  "name": "{{backendPool}}",
+  "properties": {
+    "description": "{{backendPool}}",
+    "type": "Pool",
+    "pool": {
+      "services": [
+        {
+          "id": "/subscriptions/{{subscription_id}}/resourceGroups/{{resourceGroupName}}/providers/Microsoft.ApiManagement/service/{{apimName}}/backends/{{backendBal1}}",
+          "priority":1
+        },
+        {
+          "id": "/subscriptions/{{subscription_id}}/resourceGroups/{{resourceGroupName}}/providers/Microsoft.ApiManagement/service/{{apimName}}/backends/{{backendBal2}}",
+          "priority":2
+        }
+      ]
+    }
+  }
+}
+
+### key-based authentication
+
+# Backend Creation - Fallback (no restrictions) - using Key-based authentication
+PUT https://management.azure.com/subscriptions/{{subscription_id}}/resourceGroups/{{resourceGroupName}}/providers/Microsoft.ApiManagement/service/{{apimName}}/backends/{{backendBal2}}?api-version={{apim-api-version}}
+Authorization: Bearer {{Token}}
+Content-Type: application/json
+
+{
+  "properties": {
+    "title": "{{backendBal2}}",
+    "description": "{{backendBal2}}",
+    "url": "{{backendBal2-url}}openai",
+    "protocol": "http",
+    "credentials": {
+      "query": {
+          "api-version": [
+          "{{opeanai-api-version}}"
+          ]
+      },
+      "header": {
+          "Content-Type": [
+            "Application/Json"
+            ],
+          "api-key": [
+          "{{backendBal2-openai-key}}"
+          ]
+      }
+    },
+    "tls": {
+      "validateCertificateChain": true,
+      "validateCertificateName": true
+    }
+  }
+}
+
+###
+
+
 # Backend Creation - Main with Circuit Breaker - using Key-based authentication
-PUT https://management.azure.com/subscriptions/{{subscriptionId}}/resourceGroups/{{resourceGroupName}}/providers/Microsoft.ApiManagement/service/{{apimName}}/backends/{{backendBal1}}?api-version={{apim-api-version}}
+PUT https://management.azure.com/subscriptions/{{subscription_id}}/resourceGroups/{{resourceGroupName}}/providers/Microsoft.ApiManagement/service/{{apimName}}/backends/{{backendBal1}}?api-version={{apim-api-version}}
 Authorization: Bearer {{Token}}
 Content-Type: application/json
 
@@ -84,7 +169,7 @@ Content-Type: application/json
   "properties": {
     "title": "{{backendBal1}}",
     "description": "{{backendBal1}}",
-    "url": "{{backendBal1-url}}",
+    "url": "{{backendBal1-url}}openai",
     "protocol": "http",
     "credentials": {
       "query": {
@@ -121,89 +206,6 @@ Content-Type: application/json
               }
             ]
           }
-        }
-      ]
-    }
-  }
-}
-
-###
-
-# Backend Creation - Fallback (no restrictions) - using Managed Identity authentication
-PUT https://management.azure.com/subscriptions/{{subscriptionId}}/resourceGroups/{{resourceGroupName}}/providers/Microsoft.ApiManagement/service/{{apimName}}/backends/{{backendBal2}}?api-version={{apim-api-version}}
-Authorization: Bearer {{Token}}
-Content-Type: application/json
-
-{
-  "properties": {
-    "title": "{{backendBal2}}",
-    "description": "{{backendBal2}}",
-    "url": "{{backendBal2-url}}",
-    "protocol": "http",
-    "tls": {
-      "validateCertificateChain": true,
-      "validateCertificateName": true
-    }
-  }
-}
-
-###
-
-# Backend Creation - Fallback (no restrictions) - using Key-based authentication
-PUT https://management.azure.com/subscriptions/{{subscriptionId}}/resourceGroups/{{resourceGroupName}}/providers/Microsoft.ApiManagement/service/{{apimName}}/backends/{{backendBal2}}?api-version={{apim-api-version}}
-Authorization: Bearer {{Token}}
-Content-Type: application/json
-
-{
-  "properties": {
-    "title": "{{backendBal2-url}}",
-    "description": "{{backendBal2-url}}",
-    "url": "{{backendBal2-url}}",
-    "protocol": "http",
-    "credentials": {
-      "query": {
-          "api-version": [
-          "{{opeanai-api-version}}"
-          ]
-      },
-      "header": {
-          "Content-Type": [
-            "Application/Json"
-            ],
-          "api-key": [
-          "{{backendBal2-openai-key}}"
-          ]
-      }
-    },
-    "tls": {
-      "validateCertificateChain": true,
-      "validateCertificateName": true
-    }
-  }
-}
-
-###
-
-# Backend Pool Creation or Update using PUT
-PUT https://management.azure.com/subscriptions/{{subscriptionId}}/resourceGroups/{{resourceGroupName}}/providers/Microsoft.ApiManagement/service/{{apimName}}/backends/{{backendPool}}?api-version={{apim-api-version}}
-Authorization: Bearer {{Token}}
-Content-Type: application/json
-
-{
-  "type": "Microsoft.ApiManagement/service/backends",
-  "name": "{{backendPool}}",
-  "properties": {
-    "description": "{{backendPool}}",
-    "type": "Pool",
-    "pool": {
-      "services": [
-        {
-          "id": "/subscriptions/{{subscriptionId}}/resourceGroups/{{resourceGroupName}}/providers/Microsoft.ApiManagement/service/{{apimName}}/backends/{{backendBal1}}",
-          "priority":1
-        },
-        {
-          "id": "/subscriptions/{{subscriptionId}}/resourceGroups/{{resourceGroupName}}/providers/Microsoft.ApiManagement/service/{{apimName}}/backends/{{backendBal2}}",
-          "priority":2
         }
       ]
     }
