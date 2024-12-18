@@ -1,0 +1,213 @@
+# API Management Service https://learn.microsoft.com/en-us/rest/api/apimanagement/api-management-service
+# backend create/update: https://learn.microsoft.com/en-us/rest/api/apimanagement/backend/create-or-update
+
+# $token=$(az account get-access-token --query accessToken --output tsv)
+
+
+@Token             = ***
+
+@subscriptionId    = ***
+@resourceGroupName = genaihackgrp
+@apimName          = genaihackapim
+
+@backendPool       = backend-openai-pool
+
+@backendBal1       = backend-openai-main
+@backendBal1-url   = https://mmoaiswc-01.openai.azure.com/
+@backendBal1-openai-key = ***
+
+@backendBal2       = backend-openai-fallback
+@backendBal2-url   = https://mmoaiscus-01.openai.azure.com/
+@backendBal2-openai-key = ***
+
+# 2023-09-01-preview, 2024-05-01-preview, 2024-05-01 or 2024-06-01-preview or 
+@apim-api-version   = 2024-06-01-preview
+# 2024-05-01-preview 2024-10-01
+@opeanai-api-version = 2024-05-01-preview
+
+# ALL Backends Retrieval using GET
+GET https://management.azure.com/subscriptions/{{subscriptionId}}/resourceGroups/{{resourceGroupName}}/providers/Microsoft.ApiManagement/service/{{apimName}}/backends?api-version={{apim-api-version}}
+Authorization: Bearer {{Token}}
+
+###
+# SPECIFIC Backend Retrieval using GET
+@backendToRetrieve={{backendPool}}
+GET https://management.azure.com/subscriptions/{{subscriptionId}}/resourceGroups/{{resourceGroupName}}/providers/Microsoft.ApiManagement/service/{{apimName}}/backends/aaa-openai-endpoint?api-version={{apim-api-version}}
+Authorization: Bearer {{Token}}
+
+###
+
+# Backend Creation - Main with Circuit Breaker - using Managed Identity authentication
+PUT https://management.azure.com/subscriptions/{{subscriptionId}}/resourceGroups/{{resourceGroupName}}/providers/Microsoft.ApiManagement/service/{{apimName}}/backends/{{backendBal1}}?api-version={{apim-api-version}}
+Authorization: Bearer {{Token}}
+Content-Type: application/json
+
+{
+  "properties": {
+    "title": "{{backendBal1}}",
+    "description": "{{backendBal1}}",
+    "url": "{{backendBal1-url}}",
+    "protocol": "http",
+    "tls": {
+      "validateCertificateChain": true,
+      "validateCertificateName": true
+    },
+    "circuitBreaker": {
+      "rules": [
+        {
+          "name": "myCircuitBreakerRule",
+          "tripDuration": "PT60S",
+          "acceptRetryAfter": "false",
+          "failureCondition": {
+            "count": "1",
+            "interval": "PT10S" ,
+            "statusCodeRanges": [
+              {
+                "min": "429",
+                "max": "429"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}
+###
+
+# Backend Creation - Main with Circuit Breaker - using Key-based authentication
+PUT https://management.azure.com/subscriptions/{{subscriptionId}}/resourceGroups/{{resourceGroupName}}/providers/Microsoft.ApiManagement/service/{{apimName}}/backends/{{backendBal1}}?api-version={{apim-api-version}}
+Authorization: Bearer {{Token}}
+Content-Type: application/json
+
+{
+  "properties": {
+    "title": "{{backendBal1}}",
+    "description": "{{backendBal1}}",
+    "url": "{{backendBal1-url}}",
+    "protocol": "http",
+    "credentials": {
+      "query": {
+          "api-version": [
+          "{{opeanai-api-version}}"
+          ]
+      },      
+      "header": {
+          "Content-Type": [
+          "Application/Json"
+          ],
+          "api-key": [
+          "{{backendBal1-openai-key}}"
+          ]
+      }
+    },
+    "tls": {
+      "validateCertificateChain": true,
+      "validateCertificateName": true
+    },
+    "circuitBreaker": {
+      "rules": [
+        {
+          "name": "myBreakerRule",
+          "tripDuration": "PT60S",
+          "acceptRetryAfter": "false",
+          "failureCondition": {
+            "count": "1",
+            "interval": "PT10S" ,
+            "statusCodeRanges": [
+              {
+                "min": "429",
+                "max": "429"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}
+
+###
+
+# Backend Creation - Fallback (no restrictions) - using Managed Identity authentication
+PUT https://management.azure.com/subscriptions/{{subscriptionId}}/resourceGroups/{{resourceGroupName}}/providers/Microsoft.ApiManagement/service/{{apimName}}/backends/{{backendBal2}}?api-version={{apim-api-version}}
+Authorization: Bearer {{Token}}
+Content-Type: application/json
+
+{
+  "properties": {
+    "title": "{{backendBal2}}",
+    "description": "{{backendBal2}}",
+    "url": "{{backendBal2-url}}",
+    "protocol": "http",
+    "tls": {
+      "validateCertificateChain": true,
+      "validateCertificateName": true
+    }
+  }
+}
+
+###
+
+# Backend Creation - Fallback (no restrictions) - using Key-based authentication
+PUT https://management.azure.com/subscriptions/{{subscriptionId}}/resourceGroups/{{resourceGroupName}}/providers/Microsoft.ApiManagement/service/{{apimName}}/backends/{{backendBal2}}?api-version={{apim-api-version}}
+Authorization: Bearer {{Token}}
+Content-Type: application/json
+
+{
+  "properties": {
+    "title": "{{backendBal2-url}}",
+    "description": "{{backendBal2-url}}",
+    "url": "{{backendBal2-url}}",
+    "protocol": "http",
+    "credentials": {
+      "query": {
+          "api-version": [
+          "{{opeanai-api-version}}"
+          ]
+      },
+      "header": {
+          "Content-Type": [
+            "Application/Json"
+            ],
+          "api-key": [
+          "{{backendBal2-openai-key}}"
+          ]
+      }
+    },
+    "tls": {
+      "validateCertificateChain": true,
+      "validateCertificateName": true
+    }
+  }
+}
+
+###
+
+# Backend Pool Creation or Update using PUT
+PUT https://management.azure.com/subscriptions/{{subscriptionId}}/resourceGroups/{{resourceGroupName}}/providers/Microsoft.ApiManagement/service/{{apimName}}/backends/{{backendPool}}?api-version={{apim-api-version}}
+Authorization: Bearer {{Token}}
+Content-Type: application/json
+
+{
+  "type": "Microsoft.ApiManagement/service/backends",
+  "name": "{{backendPool}}",
+  "properties": {
+    "description": "{{backendPool}}",
+    "type": "Pool",
+    "pool": {
+      "services": [
+        {
+          "id": "/subscriptions/{{subscriptionId}}/resourceGroups/{{resourceGroupName}}/providers/Microsoft.ApiManagement/service/{{apimName}}/backends/{{backendBal1}}",
+          "priority":1
+        },
+        {
+          "id": "/subscriptions/{{subscriptionId}}/resourceGroups/{{resourceGroupName}}/providers/Microsoft.ApiManagement/service/{{apimName}}/backends/{{backendBal2}}",
+          "priority":2
+        }
+      ]
+    }
+  }
+}
+
+###
