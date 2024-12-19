@@ -1,14 +1,14 @@
-# Chat Completion - POST
-@deployment-id=embeddings-for-apim
-@api-version = 2024-05-01-preview
-@APIM-API-Endpoint = https://mmapim01.azure-api.net/balanced-azure-open-aiservice-api
-@subscription-key = 05eaa4db36254d16acfef11ac413f335 
+# Embedding creation - POST
+@deployment-id = embeddings-for-apim
+@apimApiVersion    = 2023-05-01-preview
+@APIM-API-Endpoint = https://genaihackapim.azure-api.net
+@APIM-API-Name = balanced-azure-openai-service-api
+@APIM-API-Operation-Path = openai/deployments/{{deployment-id}}/embeddings
 
-@APIM-API-Operation-Path = /deployments/{{deployment-id}}/embeddings?api-version={api-version}
-
+POST {{APIM-API-Endpoint}}/{{APIM-API-Name}}/{{APIM-API-Operation-Path}}?api-version={{apimApiVersion}}
 
 POST {{APIM-API-Endpoint}}{{APIM-API-Operation-Path}}
-api-key: {{subscription-key}}
+api-key: {{apim_subscription_key_service}}
 Content-Type: application/json
 
 {
