@@ -1,0 +1,23 @@
+Summary: 2 correct results out of 5 (40.0%)
+=======
+>>>> 1 (http) - WRONG: La carta giovane denominata "Superflash" è una carta prepagata nominativa ricaricabile destinata ai giovani, studenti o lavoratori. Questa carta può essere sottoscritta esclusivamente da maggiorenni che possiedono un Codice Fiscale valido e che abbiano sottoscritto il Servizio a distanza e firme elettroniche - My Key. 
+
+Con la carta Superflash è possibile:
+- Disporre e ricevere bonifici (non è possibile ricevere bonifici di importo inferiore a 1,00 euro)
+- Pagare presso gli esercizi commerciali
+- Acquistare su Internet senza possedere un conto corrente
+
+{Non può essere rilasciata a minori o incapaci}.
+
+[id_fonte: 1203]
+
+>>>> 2 (http) - WRONG: La carta prepagata Superflash è destinata ai giovani (studenti o lavoratori) e a tutti coloro che desiderano ricevere bonifici, pagare presso gli esercizi commerciali e acquistare su Internet senza possedere un conto corrente. 
+
+La carta non può essere rilasciata a minori o incapaci e non consente di ricevere bonifici di importo inferiore a 1,00 euro [1203].
+
+>>>> 3 (http) - CORRECT: Come Co-pilota dei Gestori di Filiale Digitale mi occupo di altri argomenti, per approfondirli consulta la Guida ai contenuti. Se vuoi chiedimi qualcos'altro e proverò a risponderti.
+
+>>>> 4 (http) - CORRECT: Come Co-pilota dei Gestori di Filiale Digitale mi occupo di altri argomenti, per approfondirli consulta la Guida ai contenuti. Se vuoi chiedimi qualcos'altro e proverò a risponderti.
+
+>>>> 5 (http) - WRONG: La carta Superflash è una carta prepagata nominativa ricaricabile destinata ai giovani, studenti o lavoratori, e a tutti coloro che desiderano disporre e ricevere bonifici, pagare presso gli esercizi commerciali e acquistare su Internet senza ancora possedere un conto corrente. La carta può essere sottoscritta esclusivamente da maggiorenni che possiedono un Codice Fiscale valido e che abbiano sottoscritto il Servizio a distanza e firme elettroniche - My Key. Non può essere rilasciata a minori o incapaci [1203].
+

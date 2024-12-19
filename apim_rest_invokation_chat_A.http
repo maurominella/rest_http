@@ -4,12 +4,14 @@
 @APIM-API-Endpoint = https://genaihackapim.azure-api.net
 @APIM-API-Name = balanced-azure-openai-service-api
 
+# apim_subscription_key_service, apim_subscription_key_standard and apim_subscription_key_premium
+@apim-subscription-key = {{apim_subscription_key_premium}}
 
 @APIM-API-Operation-Path = openai/deployments/{{deployment-id}}/chat/completions
 
 
 POST {{APIM-API-Endpoint}}/{{APIM-API-Name}}/{{APIM-API-Operation-Path}}?api-version={{apimApiVersion}}
-api-key: {{apim_subscription_key_service}}
+api-key: {{apim-subscription-key}}
 Content-Type: application/json
 
 {
