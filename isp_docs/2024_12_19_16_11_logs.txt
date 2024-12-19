@@ -1,0 +1,44 @@
+Summary: 6 correct results out of 10 (60.0%)
+=======
+>>>> 1 (sdk) - CORRECT: Come Co-pilota dei Gestori di Filiale Digitale mi occupo di altri argomenti, per approfondirli consulta la Guida ai contenuti. Se vuoi chiedimi qualcos'altro e proverò a risponderti.
+
+>>>> 2 (sdk) - CORRECT: Come Co-pilota dei Gestori di Filiale Digitale mi occupo di altri argomenti, per approfondirli consulta la Guida ai contenuti. Se vuoi chiedimi qualcos'altro e proverò a risponderti.
+
+>>>> 3 (sdk) - CORRECT: Come Co-pilota dei Gestori di Filiale Digitale mi occupo di altri argomenti, per approfondirli consulta la Guida ai contenuti. Se vuoi chiedimi qualcos'altro e proverò a risponderti.
+
+>>>> 4 (sdk) - CORRECT: Come Co-pilota dei Gestori di Filiale Digitale mi occupo di altri argomenti, per approfondirli consulta la Guida ai contenuti. Se vuoi chiedimi qualcos'altro e proverò a risponderti.
+
+>>>> 5 (sdk) - WRONG: La carta giovani nazionale non è specificamente menzionata nelle fonti fornite. Tuttavia, posso fornirti informazioni su alcune carte destinate ai giovani offerte da Intesa Sanpaolo:
+
+1. **Carta Superflash**:
+   - È una carta prepagata nominativa ricaricabile destinata ai giovani, studenti o lavoratori.
+   - Permette di disporre e ricevere bonifici (non è possibile ricevere bonifici di importo inferiore a 1,00 euro), pagare presso gli esercizi commerciali e acquistare su Internet senza possedere un conto corrente.
+   - Non può essere rilasciata a minori o incapaci. [1203]
+
+2. **XME Card Plus**:
+   - Dal **27 maggio al 30 novembre 2023**, i giovani under 35 possono usufruire di una promozione che azzera il canone mensile della XME Card Plus se sottoscritta entro il **30 novembre 2023** fino alla fine del mese del compimento del trentacinquesimo anno di età. [815]
+
+Se hai bisogno di ulteriori dettagli su una carta specifica, fammi sapere!
+
+>>>> 6 (sdk) - CORRECT: Come Co-pilota dei Gestori di Filiale Digitale mi occupo di altri argomenti, per approfondirli consulta la Guida ai contenuti. Se vuoi chiedimi qualcos'altro e proverò a risponderti.
+
+>>>> 7 (sdk) - CORRECT: Come Co-pilota dei Gestori di Filiale Digitale mi occupo di altri argomenti, per approfondirli consulta la Guida ai contenuti. Se vuoi chiedimi qualcos'altro e proverò a risponderti.
+
+>>>> 8 (sdk) - WRONG: La carta giovani nazionale non è specificamente menzionata nelle fonti fornite. Tuttavia, posso fornirti informazioni su alcune carte destinate ai giovani offerte da Intesa Sanpaolo:
+
+1. **Carta Superflash**:
+   - È una carta prepagata nominativa ricaricabile destinata ai giovani, studenti o lavoratori.
+   - Permette di disporre e ricevere bonifici (non è possibile ricevere bonifici di importo inferiore a 1,00 euro), pagare presso gli esercizi commerciali e acquistare su Internet senza possedere un conto corrente.
+   - Non può essere rilasciata a minori o incapaci. [1203]
+
+2. **XME Card Plus**:
+   - Dal **27 maggio 2023** al **30 novembre 2023**, i giovani under 35 possono usufruire di una promozione che azzera il canone mensile della XME Card Plus se sottoscritta entro il **30 novembre 2023** fino alla fine del mese del compimento del trentacinquesimo anno di età. [815]
+
+Se hai bisogno di ulteriori dettagli su una carta specifica, fammi sapere!
+
+>>>> 9 (sdk) - WRONG: La carta Superflash è una carta prepagata nominativa ricaricabile destinata ai giovani, studenti o lavoratori, e a tutti coloro che desiderano disporre e ricevere bonifici, pagare presso gli esercizi commerciali e acquistare su Internet senza ancora possedere un conto corrente. Non può essere rilasciata a minori o incapaci. La carta può essere sottoscritta esclusivamente da maggiorenni che possiedono un Codice Fiscale valido e che abbiano sottoscritto il Servizio a distanza e firme elettroniche - My Key [1203].
+
+>>>> 10 (sdk) - WRONG: La carta Superflash è una carta prepagata nominativa ricaricabile destinata ai giovani, studenti o lavoratori, e a tutti coloro che desiderano disporre e ricevere bonifici, pagare presso gli esercizi commerciali e acquistare su Internet senza ancora possedere un conto corrente. Non può essere rilasciata a minori o incapaci. [1203]
+
+Per le carte Superflash in convenzione emesse prima del 30.09.17 che beneficiano di una deroga "a tempo" sul canone annuo, alla scadenza della deroga stessa viene applicato in automatico il nuovo canone annuo pari a <b>26,90 euro</b>. Se il cliente ha ancora meno di 26 anni non pagherà il canone; al compimento dei 26 anni sarà applicato, dal mese successivo a quello di scadenza annuale della carta, il canone di <b>26,90 euro</b> (derogabile a <b>9,90 euro</b> solo attraverso un intervento in Price da parte della filiale) [1068].
+
