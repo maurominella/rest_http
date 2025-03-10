@@ -1,0 +1,48 @@
+# https://learn.microsoft.com/en-us/azure/ai-services/agents/quickstart?pivots=rest-api
+# az account get-access-token --resource https://ml.azure.com/ 
+
+@token = eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6IkpETmFfNGk0cjdGZ2lnTDNzSElsSTN4Vi1JVSIsImtpZCI6IkpETmFfNGk0cjdGZ2lnTDNzSElsSTN4Vi1JVSJ9.eyJhdWQiOiJodHRwczovL21sLmF6dXJlLmNvbS8iLCJpc3MiOiJodHRwczovL3N0cy53aW5kb3dzLm5ldC8zYWQwYjkwNS0zNGFiLTQxMTYtOTNkOS1jMWRjYzJkMzVhZjYvIiwiaWF0IjoxNzQxNjE0MTk1LCJuYmYiOjE3NDE2MTQxOTUsImV4cCI6MTc0MTYxOTU5MiwiYWNyIjoiMSIsImFpbyI6IkFWUUFxLzhaQUFBQTY1SC9VVWlBaExDSWpjazJLWjB2VkN1M3FzcHdIWlRmN2dtQlExSG02c3V6UDZCVzRWanBwQXlqcDlNeEhsYUhubkRBRlJ1SFBPajhuL0xTUDlaODZBNlVuSDRmd0t3ZnVKQlliNnBzK3FvPSIsImFtciI6WyJwd2QiLCJyc2EiLCJtZmEiXSwiYXBwaWQiOiIwNGIwNzc5NS04ZGRiLTQ2MWEtYmJlZS0wMmY5ZTFiZjdiNDYiLCJhcHBpZGFjciI6IjAiLCJkZXZpY2VpZCI6ImM2ZDc4MzRjLWM1M2EtNGQ1NS04Y2JmLTAzYjBjN2VlN2IyZiIsImZhbWlseV9uYW1lIjoiTWluZWxsYSIsImdpdmVuX25hbWUiOiJNYXVybyIsImdyb3VwcyI6WyI5ZDU2ZmY0ZS02MjkzLTQwYzUtODZmZC1lZjI4NWFlOWY1NjQiLCJjM2RhNDI5MS05YTE4LTQ0MjktYTVmOS05OWFiMWIwNTg3NTMiXSwiaWR0eXAiOiJ1c2VyIiwiaXBhZGRyIjoiOTMuNTYuMTA0LjI0OSIsIm5hbWUiOiJNYXVybyBNaW5lbGxhIiwib2lkIjoiNjhjNGJmMWUtN2M0OS00ZjkyLWE4ZjUtMGQzMzE4MzFjNTFhIiwicHVpZCI6IjEwMDMyMDAzQUFGQzk4QzkiLCJwd2RfdXJsIjoiaHR0cHM6Ly9wb3J0YWwubWljcm9zb2Z0b25saW5lLmNvbS9DaGFuZ2VQYXNzd29yZC5hc3B4IiwicmgiOiIxLkFiMEFCYm5RT3FzMEZrR1QyY0hjd3ROYTlsOXZwaGpmMnhkTW5kY1dOSEVxbkw0REFVSzlBQS4iLCJzY3AiOiJ1c2VyX2ltcGVyc29uYXRpb24iLCJzaWQiOiI0NzNmNTI1OS0xZjNjLTQ2NGMtOWZmYi1lNzM0ZmQ0ZDVhZjYiLCJzdWIiOiIyTzNoeWFoYVNob0txUWxtMWV0S0JIdjg0cmpkUkNDVEk3TFFkcWYza3U0IiwidGlkIjoiM2FkMGI5MDUtMzRhYi00MTE2LTkzZDktYzFkY2MyZDM1YWY2IiwidW5pcXVlX25hbWUiOiJtYXVyby5taW5lbGxhQE1uZ0Vudk1DQVA4ODM2NTIub25taWNyb3NvZnQuY29tIiwidXBuIjoibWF1cm8ubWluZWxsYUBNbmdFbnZNQ0FQODgzNjUyLm9ubWljcm9zb2Z0LmNvbSIsInV0aSI6InVHWkRqc0FDc2tlNGhUZGJ2d1FBQUEiLCJ2ZXIiOiIxLjAiLCJ4bXNfaWRyZWwiOiIyNiAxIn0.Fm1hT59AMopF_xks-qgEfQY_xkKGGxHVvFL4P8w_OlH98IjWyD_2AokxiJFWDG9ZuU0s_1bHPit6j3huIDnpFiLQFpA74WVQZvKMoBEdikHUG1izGB2EH2MK1yZW32w29TjKPpnCfZH92JHWcOuZBSVeLKgBEaQemUcFvUTWl8HRxg1z4rjRUuZDuGhTzr_QNIvEiBE-ttceBgT5bAZb3wGdm9IVGLo-o3nFUD_56HAVjDya7tvSk9_fVmo_yL2RU4kbXIP1OBUjfvkv0gnWVkEvwLsq25f2izvktKBLL2mIS2kEPTqSOSM-cWZp8eXtXA9PW_zAqG61D0zb7TKHpg
+
+@agents_endpoint = https://eastus.api.azureml.ms/agents/v1.0/subscriptions/eca2eddb-0f0c-4351-a634-52751499eeea/resourceGroups/mmai04-rg/providers/Microsoft.MachineLearningServices/workspaces/mmai-hub04-prj01-fvye
+
+
+@thread_id = thread_QfQz8A5b1In1fIrKwwEAH216
+
+@agent_id = asst_F7PY4Wx9eEMmOFdPtablnCf1
+
+@run_id = run_gkfJqkbal5lYosNewEroSjil
+
+# create thread id, given the project
+POST {{agents_endpoint}}/threads?api-version=2024-12-01-preview
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{}
+
+###
+
+# add a message to the thread, given the thread id
+POST {{agents_endpoint}}/threads/{{thread_id}}/messages?api-version=2024-12-01-preview
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "role": "user",
+    "content": "Cosa posso vedere in TV stasera"
+}
+
+
+###
+POST {{agents_endpoint}}/threads/{{thread_id}}/runs?api-version=2024-12-01-preview
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "assistant_id": "{{agent_id}}"
+}
+
+
+###
+GET {{agents_endpoint}}/threads/{{thread_id}}/runs/{{run_id}}?api-version=2024-12-01-preview
+Authorization: Bearer {{token}}
+Content-Type: application/json

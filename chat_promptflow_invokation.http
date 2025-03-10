@@ -1,0 +1,16 @@
+# Chat Completion - POST
+@promptflow_endpoint = https://sogei-endpoint.swedencentral.inference.ml.azure.com/score
+@promptflow_apikey = E2iU5MlDUjI1pdzpRaC2CVn5uJCAB73j
+
+
+POST {{promptflow_endpoint}}
+Authorization: Bearer {{promptflow_apikey}}
+Content-Type: application/json
+
+{
+  "chat_input": [
+    {"chat_input": "Come funziona il servizio di assistenza? Rispondi in meno di 10 parole"},
+    {"chat_output": "Il servizio garantisce supporto tecnico e applicativo per utenti."},
+    {"chat_input": "ma il primo livello qual è?"}
+  ]
+}
