@@ -1,0 +1,481 @@
+@resource_group_name  = Ai_Volksbank
+@aisearch_api_version = 2024-11-01-preview
+@datasource_name      = storage-documenti-normi
+@index_name           = normi-index-v3
+@skillset_name        = normi-skillset-v3
+@indexer_name         = normi-indexer-v3
+@storage_connection_string_mi  = ResourceId=/subscriptions/{{subscription_id}}/resourceGroups/{{resource_group_name}}/providers/Microsoft.Storage/storageAccounts/{{storage_account_name}};
+@vector_semantic_configuration = vector-{{index_name}}-semantic-configuration
+@vector_text_search_profile    = vector-{{index_name}}-openai-text-profile
+@vector_text_search_profile_algorithm = {{vector_text_search_profile}}-algorithm
+@vector_text_search_profile_vectorizer = {{vector_text_search_profile}}-vectorizer
+@embedding_deployment_name = text-embedding-3-large
+@embedding_model_name = text-embedding-3-large
+
+ 
+### DataSource creation with dataChangeDetectionPolicy and dataDeletionDetectionPolicy
+PUT {{azure_search_endpoint}}/datasources/{{datasource_name}}?api-version={{aisearch_api_version}}
+Content-Type: application/json
+api-key: {{aisearch_key}}
+ 
+{  
+    "name": "{{datasource_name}}",
+    "type": "azureblob",
+    "credentials": {  
+        "connectionString": "{{storage_connection_string_mi}}"
+    },
+    "container": {  
+        "name": "{{container_name}}",
+        "query": "{{folder_name}}"
+    },
+    "dataChangeDetectionPolicy": {  
+        "@odata.type": "#Microsoft.Azure.Search.HighWaterMarkChangeDetectionPolicy",
+        "highWaterMarkColumnName": "metadata_storage_last_modified"  
+    },
+    "dataDeletionDetectionPolicy": {
+        "@odata.type": "#Microsoft.Azure.Search.NativeBlobSoftDeleteDeletionDetectionPolicy"
+    }
+}
+ 
+### Create an Index
+PUT {{azure_search_endpoint}}/indexes/{{index_name}}?api-version={{aisearch_api_version}}
+Content-Type: application/json
+api-key: {{aisearch_key}}
+ 
+{
+  "name": "{{index_name}}",
+  "fields": [
+    {
+      "name": "chunk_id",
+      "type": "Edm.String",
+      "key": true,
+      "retrievable": true,
+      "stored": true,
+      "searchable": true,
+      "filterable": false,
+      "sortable": true,
+      "facetable": false,
+      "analyzer": "keyword",
+      "synonymMaps": []
+    },
+    {
+      "name": "text_parent_id",
+      "type": "Edm.String",
+      "key": false,
+      "retrievable": true,
+      "stored": true,
+      "searchable": false,
+      "filterable": true,
+      "sortable": false,
+      "facetable": false,
+      "synonymMaps": []
+    },
+    {
+      "name": "chunk",
+      "type": "Edm.String",
+      "key": false,
+      "retrievable": true,
+      "stored": true,
+      "searchable": true,
+      "filterable": false,
+      "sortable": false,
+      "facetable": false,
+      "synonymMaps": []
+    },
+    {
+      "name": "title",
+      "type": "Edm.String",
+      "key": false,
+      "retrievable": true,
+      "stored": true,
+      "searchable": true,
+      "filterable": false,
+      "sortable": false,
+      "facetable": false,
+      "synonymMaps": []
+    },
+    {
+      "name": "url",
+      "type": "Edm.String",
+      "key": false,
+      "retrievable": true,
+      "stored": true,
+      "searchable": false,
+      "filterable": false,
+      "sortable": false,
+      "facetable": false,
+      "synonymMaps": []
+    },
+    {
+      "name": "text_vector",
+      "type": "Collection(Edm.Single)",
+      "key": false,
+      "retrievable": true,
+      "stored": true,
+      "searchable": true,
+      "filterable": false,
+      "sortable": false,
+      "facetable": false,
+      "synonymMaps": [],
+      "dimensions": 3072,
+      "vectorSearchProfile": "{{vector_text_search_profile}}"
+    }
+  ],
+  "scoringProfiles": [],
+  "suggesters": [],
+  "analyzers": [],
+  "tokenizers": [],
+  "tokenFilters": [],
+  "charFilters": [],
+  "similarity": {
+    "@odata.type": "#Microsoft.Azure.Search.BM25Similarity"
+  },
+  "semantic": {
+    "defaultConfiguration": "{{vector_semantic_configuration}}",
+    "configurations": [
+      {
+        "name": "{{vector_semantic_configuration}}",
+        "prioritizedFields": {
+          "titleField": {
+            "fieldName": "title"
+          },
+          "prioritizedContentFields": [
+            {
+              "fieldName": "chunk"
+            }
+          ],
+          "prioritizedKeywordsFields": []
+        }
+      }
+    ]
+  },
+  "vectorSearch": {
+    "algorithms": [
+      {
+        "name": "{{vector_text_search_profile_algorithm}}",
+        "kind": "hnsw",
+        "hnswParameters": {
+          "m": 4,
+          "efConstruction": 400,
+          "efSearch": 500,
+          "metric": "cosine"
+        }
+      }
+    ],
+    "profiles": [
+      {
+        "name": "{{vector_text_search_profile}}",
+        "algorithm": "{{vector_text_search_profile_algorithm}}",
+        "vectorizer": "{{vector_text_search_profile_vectorizer}}"
+      }
+    ],
+    "vectorizers": [
+      {
+        "name": "{{vector_text_search_profile_vectorizer}}",
+        "kind": "azureOpenAI",
+        "azureOpenAIParameters": {
+          "resourceUri": "{{openai_endpoint}}",
+          "deploymentId": "{{embedding_deployment_name}}",
+          "modelName": "{{embedding_model_name}}"
+        }
+      }
+    ],
+    "compressions": []
+  }
+}
+
+ 
+### Create a Skillset
+PUT {{azure_search_endpoint}}/skillsets/{{skillset_name}}?api-version=2024-11-01-preview
+Content-Type: application/json
+api-key: {{aisearch_key}}
+ 
+{
+  "name": "{{skillset_name}}",
+  "description": "Skillset to chunk documents and generate embeddings",
+  "skills": [
+    {
+      "@odata.type": "#Microsoft.Skills.Vision.OcrSkill",
+      "name": "#1",
+      "context": "/document/normalized_images/*",
+      "inputs": [
+        {
+          "name": "image",
+          "source": "/document/normalized_images/*",
+          "inputs": []
+        }
+      ],
+      "outputs": [
+        {
+          "name": "text",
+          "targetName": "text"
+        }
+      ],
+      "defaultLanguageCode": "it",
+      "detectOrientation": true,
+      "lineEnding": "Space"
+    },
+    {
+      "@odata.type": "#Microsoft.Skills.Text.MergeSkill",
+      "name": "#2",
+      "context": "/document",
+      "inputs": [
+        {
+          "name": "text",
+          "source": "/document/content",
+          "inputs": []
+        },
+        {
+          "name": "itemsToInsert",
+          "source": "/document/normalized_images/*/text",
+          "inputs": []
+        },
+        {
+          "name": "offsets",
+          "source": "/document/normalized_images/*/contentOffset",
+          "inputs": []
+        }
+      ],
+      "outputs": [
+        {
+          "name": "mergedText",
+          "targetName": "mergedText"
+        }
+      ],
+      "insertPreTag": " ",
+      "insertPostTag": " "
+    },
+    {
+      "@odata.type": "#Microsoft.Skills.Text.SplitSkill",
+      "name": "#3",
+      "description": "Split skill to chunk documents",
+      "context": "/document",
+      "inputs": [
+        {
+          "name": "text",
+          "source": "/document/mergedText",
+          "inputs": []
+        }
+      ],
+      "outputs": [
+        {
+          "name": "textItems",
+          "targetName": "pages"
+        }
+      ],
+      "defaultLanguageCode": "it",
+      "textSplitMode": "pages",
+      "maximumPageLength": 2000,
+      "pageOverlapLength": 500,
+      "unit": "characters"
+    },
+    {
+      "@odata.type": "#Microsoft.Skills.Text.AzureOpenAIEmbeddingSkill",
+      "name": "#4",
+      "context": "/document/pages/*",
+      "inputs": [
+        {
+          "name": "text",
+          "source": "/document/pages/*",
+          "inputs": []
+        }
+      ],
+      "outputs": [
+        {
+          "name": "embedding",
+          "targetName": "text_vector"
+        }
+      ],
+      "resourceUri": "{{openai_endpoint}}",
+      "deploymentId": "{{embedding_deployment_name}}",
+      "modelName": "{{embedding_deployment_name}}",
+      "dimensions": 3072
+    }
+  ],
+  "cognitiveServices": {
+    "@odata.type": "#Microsoft.Azure.Search.AIServicesByIdentity",
+    "identity": null,
+    "description": "Cognitive Service {{cognitive_service_name}}",
+    "subdomainUrl": "{{subdomainUrl}}"
+  },
+  "indexProjections": {
+    "selectors": [
+      {
+        "targetIndexName": "{{index_name}}",
+        "parentKeyFieldName": "text_parent_id",
+        "sourceContext": "/document/pages/*",
+        "mappings": [
+          {
+            "name": "text_vector",
+            "source": "/document/pages/*/text_vector",
+            "inputs": []
+          },
+          {
+            "name": "chunk",
+            "source": "/document/pages/*",
+            "inputs": []
+          },
+          {
+            "name": "title",
+            "source": "/document/title",
+            "inputs": []
+          },
+          {
+            "name": "url",
+            "source": "/document/url",
+            "inputs": []
+          }
+        ]
+      }
+    ],
+    "parameters": {
+      "projectionMode": "skipIndexingParentDocuments"
+    }
+  }
+}
+ 
+ 
+### Create and Run an Indexer
+PUT {{azure_search_endpoint}}/indexers/{{indexer_name}}?api-version={{aisearch_api_version}}
+Content-Type: application/json
+api-key: {{aisearch_key}}
+ 
+{
+  "@odata.context": "{{azure_search_endpoint}}/$metadata#indexers/$entity",
+  "name": "{{indexer_name}}",
+  "description": null,
+  "dataSourceName": "{{datasource_name}}",
+  "skillsetName": "{{skillset_name}}",
+  "targetIndexName": "{{index_name}}",
+  "disabled": null,
+  "schedule": {
+    "interval": "P1D",
+    "startTime": "2024-12-03T23:30:00Z"
+  },
+  "parameters": {
+    "batchSize": null,
+    "maxFailedItems": null,
+    "maxFailedItemsPerBatch": null,
+    "base64EncodeKeys": null,
+    "configuration": {
+      "dataToExtract": "contentAndMetadata",
+      "parsingMode": "default",
+      "imageAction": "generateNormalizedImages"
+    }
+  },
+  "fieldMappings": [
+    {
+      "sourceFieldName": "url",
+      "targetFieldName": "url",
+      "mappingFunction": null
+    },
+    {
+      "sourceFieldName": "title",
+      "targetFieldName": "title",
+      "mappingFunction": null
+    }
+  ],
+  "outputFieldMappings": [],
+  "cache": null,
+  "encryptionKey": null
+}
+ 
+### Re-run an existing Indexer
+POST {{azure_search_endpoint}}/indexers/{{indexer_name}}/run?api-version={{aisearch_api_version}}
+Content-Type: application/json
+api-key: {{aisearch_key}}
+ 
+ 
+### HIC SUNT LEONES ------------------------------------
+ 
+###
+POST {{azure_search_endpoint}}/indexes/{{index_name}}/docs/search?api-version=2024-11-01-preview
+Content-Type: application/json
+api-key: {{aisearch_key}}
+
+{
+    "search": "newer hotel near the water with a great restaurant",
+    "vectorQueries": [
+        {
+            "kind": "text",
+            "text": "newer hotel near the water with a great restaurant",
+            "k": 50,
+            "fields": "Description",
+            "queryRewrites": "generative|count-3"
+        }
+    ],
+    "semanticConfiguration":"{{vector_semantic_configuration}}",
+    "queryType":"semantic",
+    "queryRewrites":"generative|count-5",
+    "queryLanguage":"en-US",
+    "top": 1
+}
+
+### Get all datasources
+GET  {{azure_search_endpoint}}/datasources?api-version={{aisearch_api_version}}
+Content-Type: application/json
+api-key: {{aisearch_key}}
+ 
+ 
+ 
+### Delete a DataSource
+DELETE  {{azure_search_endpoint}}/datasources/{{datasource_name}}?api-version={{aisearch_api_version}}
+Content-Type: application/json
+api-key: {{aisearch_key}}
+ 
+ 
+### Delete an Index
+DELETE {{azure_search_endpoint}}/indexes/{{index_name}}?api-version={{aisearch_api_version}}
+Content-Type: application/json
+api-key: {{aisearch_key}}
+ 
+ 
+### Delete a Skillset
+DELETE {{azure_search_endpoint}}/skillsets/{{skillset_name}}?api-version={{aisearch_api_version}}
+Content-Type: application/json
+api-key: {{aisearch_key}}
+ 
+ 
+### Delete an Indexer
+DELETE {{azure_search_endpoint}}/indexers/{{indexer_name}}?api-version={{aisearch_api_version}}
+Content-Type: application/json
+api-key: {{aisearch_key}}
+ 
+ 
+### Simple DataSource creation
+PUT {{azure_search_endpoint}}/datasources/{{datasource_name}}?api-version={{aisearch_api_version}}
+Content-Type: application/json
+api-key: {{aisearch_key}}
+ 
+{  
+    "name": "{{datasource_name}}",
+    "type": "azureblob",
+    "credentials": {  
+        "connectionString": "{{storage_connection_string_mi}}"
+    },
+    "container": {  
+        "name": "{{container_name}}"
+    }
+}
+ 
+ 
+### DataSource creation with dataChangeDetectionPolicy
+PUT {{azure_search_endpoint}}/datasources/{{datasource_name}}?api-version={{aisearch_api_version}}
+Content-Type: application/json
+api-key: {{aisearch_key}}
+ 
+{  
+    "name": "{{datasource_name}}",
+    "type": "azureblob",
+    "credentials": {  
+        "connectionString": "{{storage_connection_string_mi}}"
+    },
+    "container": {  
+        "name": "{{container_name}}"
+    },
+    "dataChangeDetectionPolicy": {  
+        "@odata.type": "#Microsoft.Azure.Search.HighWaterMarkChangeDetectionPolicy",
+        "highWaterMarkColumnName": "metadata_storage_last_modified"  
+    }
+}
+ 
