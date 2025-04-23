@@ -1,0 +1,17 @@
+@azure_deployment_name = gpt-4.1
+@openai_api_version = 2025-03-01-preview
+
+###
+# Invoking OpenAI
+POST {{openai_endpoint}}/openai/deployments/{{azure_deployment_name}}/chat/completions?api-version={{openai_api_version}}
+Api-Key: {{openai_api_key}}
+Content-Type: application/json
+
+{
+    "messages": [
+        {
+            "role": "user",
+            "content": "What is a meaning function? Please summarize in less than 20 words."
+        }
+    ]
+}
