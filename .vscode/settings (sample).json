@@ -7,8 +7,8 @@
             "storage_account_name": "****",
             "container_name": "****",
             "storage_account_key": "***********==",
-            "openai_endpoint": "https://*****.openai.azure.com/",
-            "openai_api_key": "*****",
+            "AZURE_OPENAI_ENDPOINT": "*****",
+            "AZURE_OPENAI_API_KEY": "*****",
             "cognitive_service_name": "*****",
             "cognitive_service_key": "*****"
         },
@@ -19,8 +19,8 @@
             "storage_account_name": "",
             "container_name": "",
             "storage_account_key": "",
-            "openai_endpoint": "",
-            "openai_api_key": "",
+            "AZURE_OPENAI_ENDPOINT": "*****",
+            "AZURE_OPENAI_API_KEY": "*****",
             "cognitive_service_name": "",
             "cognitive_service_key": ""
         },
@@ -31,8 +31,8 @@
             "storage_account_name": "",
             "container_name": "",
             "storage_account_key": "",
-            "openai_endpoint": "",
-            "openai_api_key": "",
+            "AZURE_OPENAI_ENDPOINT": "*****",
+            "AZURE_OPENAI_API_KEY": "*****",
             "cognitive_service_name": "",
             "cognitive_service_key": ""
         }

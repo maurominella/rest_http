@@ -3,8 +3,8 @@
 
 ###
 # Invoking OpenAI
-POST {{openai_endpoint}}/openai/deployments/{{azure_deployment_name}}/chat/completions?api-version={{openai_api_version}}
-Api-Key: {{openai_api_key}}
+POST {{AZURE_OPENAI_ENDPOINT}}/openai/deployments/{{azure_deployment_name}}/chat/completions?api-version={{openai_api_version}}
+Api-Key: {{AZURE_OPENAI_API_KEY}}
 Content-Type: application/json
 
 {
@@ -19,8 +19,8 @@ Content-Type: application/json
 
 ###
 # Get the list of available models, regardless of being deployed or not
-GET {{openai_endpoint}}/openai/models?api-version={{openai_api_version}}
-Api-Key: {{openai_api_key}}
+GET {{AZURE_OPENAI_ENDPOINT}}/openai/models?api-version={{openai_api_version}}
+Api-Key: {{AZURE_OPENAI_API_KEY}}
 Content-Type: application/json
 
 {
@@ -34,8 +34,8 @@ Content-Type: application/json
 
 ###
 # Get the list of deployed models
-GET {{openai_endpoint}}/openai/deployments?api-version={{openai_api_version}}&$filter=properties/status eq 'Succeeded'
-Api-Key: {{openai_api_key}}
+GET {{AZURE_OPENAI_ENDPOINT}}/openai/deployments?api-version={{openai_api_version}}&$filter=properties/status eq 'Succeeded'
+Api-Key: {{AZURE_OPENAI_API_KEY}}
 Content-Type: application/json
 
 {
