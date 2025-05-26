@@ -1,4 +1,4 @@
-@azure_deployment_name = gpt-4.1
+@azure_deployment_name = gpt-4o
 @openai_api_version = 2025-03-01-preview
 
 ###
