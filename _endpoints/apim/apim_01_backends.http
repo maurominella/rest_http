@@ -1,0 +1,136 @@
+# az account get-access-token --resource https://management.core.windows.net/
+@bearertoken_for_azuremanagement = 
+
+@management_api_version = 2024-06-01-preview
+@apim_service_name = mauromiapim02
+@apim_resourcegroup= mmcognitivegrp
+
+@backend_openai_main_name = backend_openai_main_mmoaiswc_01
+@backend_openai_main_url  = {{azure_openai_endpoint}}openai
+@backend_openai_main_apikey = {{azure_openai_apikey}}
+
+@backend_openai_fallback_name = backend_openai_fallback_mmoaiscus01
+@backend_openai_fallback_url  = {{azure_openai_scus_endpoint}}openai
+@backend_openai_fallback_apikey = {{azure_openai_scus_apikey}}
+
+@backend_openai_pool_name = backend_openai_pool
+
+###
+# Backend creation - Fallback with APIKEY authentication on Azure OpenAI
+# just remove "api-key" value from the "header" object to disable the APIKEY authentication
+# when APIKEY is missing or empty, then APIM has to be set as Cognitive Services OpenAI User for the OpenAI Services
+PUT https://management.azure.com/subscriptions/{{subscription_id}}/resourceGroups/{{apim_resourcegroup}}/providers/Microsoft.ApiManagement/service/{{apim_service_name}}/backends/{{backend_openai_fallback_name}}?api-version={{management_api_version}}
+Authorization: Bearer {{bearertoken_for_azuremanagement}}
+Content-Type: application/json
+
+{
+  "properties": {
+    "title": "{{backend_openai_fallback_name}}",
+    "description": "{{backend_openai_fallback_name}}",
+    "url": "{{backend_openai_fallback_url}}",
+    "protocol": "http",
+    "tls": {
+      "validateCertificateChain": true,
+      "validateCertificateName": true
+    },
+    "credentials": {
+      "query": {},
+        "header": {
+            "api-key": [
+                "{{azure_openai_scus_apikey}}"
+            ]
+        },
+        "skipCertificateChainValidation": false
+    }
+  }
+}
+
+
+###
+# Backend retrieval
+GET https://management.azure.com/subscriptions/{{subscription_id}}/resourceGroups/{{apim_resourcegroup}}/providers/Microsoft.ApiManagement/service/{{apim_service_name}}/backends?api-version={{management_api_version}}
+Authorization: Bearer {{bearertoken_for_azuremanagement}}
+
+
+###
+# Backend deletion
+DELETE https://management.azure.com/subscriptions/{{subscription_id}}/resourceGroups/{{apim_resourcegroup}}/providers/Microsoft.ApiManagement/service/{{apim_service_name}}/backends/{{backend_openai_fallback_name}}?api-version={{management_api_version}}
+Authorization: Bearer {{bearertoken_for_azuremanagement}}
+
+
+###
+# Backend creation - Main with Circuit Breaker
+PUT https://management.azure.com/subscriptions/{{subscription_id}}/resourceGroups/{{apim_resourcegroup}}/providers/Microsoft.ApiManagement/service/{{apim_service_name}}/backends/{{backend_openai_main_name}}?api-version={{management_api_version}}
+Authorization: Bearer {{bearertoken_for_azuremanagement}}
+Content-Type: application/json
+
+{
+  "properties": {
+    "title": "{{backend_openai_main_name}}",
+    "description": "{{backend_openai_main_name}}",
+    "url": "{{backend_openai_main_url}}",
+    "protocol": "http",
+    "tls": {
+      "validateCertificateChain": true,
+      "validateCertificateName": true
+    },
+    "credentials": {
+      "query": {},
+        "header": {
+            "api-key": [
+                "{{backend_openai_main_apikey}}"
+            ]
+        },
+        "skipCertificateChainValidation": false
+    },
+    "circuitBreaker": {
+      "rules": [
+        {
+          "name": "myBreakerRule",
+          "tripDuration": "PT1M",
+          "acceptRetryAfter": "false",
+          "failureCondition": {
+            "count": "3",
+            "interval": "PT10S",
+            "statusCodeRanges": [
+              {
+                "min": "429",
+                "max": "429"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}
+
+
+###
+# Backend creation - Pool
+PUT https://management.azure.com/subscriptions/{{subscription_id}}/resourceGroups/{{apim_resourcegroup}}/providers/Microsoft.ApiManagement/service/{{apim_service_name}}/backends/{{backend_openai_pool_name}}?api-version={{management_api_version}}
+Authorization: Bearer {{bearertoken_for_azuremanagement}}
+Content-Type: application/json
+
+{
+  "type": "Microsoft.ApiManagement/service/backends",
+  "name": "{{backend_openai_pool_name}}",
+  "properties": {
+    "description": "{{backend_openai_pool_name}}",
+    "type": "Pool",
+    "pool": {
+      "services": [
+        {
+          "id": "/subscriptions/{{subscription_id}}/resourceGroups/{{{{apim_resourcegroup}}}}/providers/Microsoft.ApiManagement/service/{{apim_service_name}}/backends/{{backend_openai_main_name}}",
+          "priority":1
+        },
+        {
+          "id": "/subscriptions/{{subscription_id}}/resourceGroups/{{apim_resourcegroup}}/providers/Microsoft.ApiManagement/service/{{apim_service_name}}/backends/{{backend_openai_fallback_name}}",
+          "priority":2
+        }
+      ]
+    }
+  }
+}
+
+###

@@ -1,16 +1,25 @@
 {
     "rest-client.environmentVariables": {
         "dev": {
-            "subscription_id": "***",
+            "subscription_id": "",
             "azure_search_endpoint": "https://****.search.windows.net",
             "aisearch_key": "*****",
             "storage_account_name": "****",
             "container_name": "****",
             "storage_account_key": "***********==",
-            "AZURE_OPENAI_ENDPOINT": "*****",
-            "AZURE_OPENAI_API_KEY": "*****",
-            "cognitive_service_name": "*****",
-            "cognitive_service_key": "*****"
+            "azure_openai_endpoint": "https://****.openai.azure.com/",
+            "azure_openai_apikey": "****",
+            "azure_openai_scus_endpoint": "https://****.openai.azure.com/openai/",
+            "azure_openai_scus_apikey": "*****",
+            "resourcegroup_name": "****",
+            "apim_service_gatewayurl": "https://****.azure-api.net",
+            "apim_service_name": "****",
+            "apim_resourcegroup": "****",
+            "apim_subscription_key_premium": "****",
+            "apim_subscription_key_standard": "****",
+            "apim_subscription_key_basic": "****",
+            "cognitive_service_name": "****",
+            "cognitive_service_key": "****"        
         },
         "staging": {
             "subscription_id": "",
@@ -19,8 +28,8 @@
             "storage_account_name": "",
             "container_name": "",
             "storage_account_key": "",
-            "AZURE_OPENAI_ENDPOINT": "*****",
-            "AZURE_OPENAI_API_KEY": "*****",
+            "AZURE_OPENAI_ENDPOINT": "****",
+            "AZURE_OPENAI_API_KEY": "****",
             "cognitive_service_name": "",
             "cognitive_service_key": ""
         },
@@ -31,8 +40,8 @@
             "storage_account_name": "",
             "container_name": "",
             "storage_account_key": "",
-            "AZURE_OPENAI_ENDPOINT": "*****",
-            "AZURE_OPENAI_API_KEY": "*****",
+            "AZURE_OPENAI_ENDPOINT": "****",
+            "AZURE_OPENAI_API_KEY": "****",
             "cognitive_service_name": "",
             "cognitive_service_key": ""
         }
