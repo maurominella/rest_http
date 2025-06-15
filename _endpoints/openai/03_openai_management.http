@@ -1,0 +1,20 @@
+# https://learn.microsoft.com/en-us/azure/ai-services/agents/quickstart?pivots=rest-api
+# az account get-access-token --resource https://management.core.windows.net/
+
+@azure_deployment_name = gpt-4.1-for-apim
+ # The version of the OpenAI API to use, could be different from the latest version, e.g. 2025-04-01-preview / 2025-04-28
+@openai_api_version = 2025-04-01-preview
+@bearertoken_for_azuremanagement = 
+
+
+###
+# Get the list of available models, regardless of being deployed or not
+GET {{azure_openai_endpoint}}/openai/models?api-version={{openai_api_version}}
+Api-Key: {{azure_openai_apikey}}
+Content-Type: application/json
+
+###
+# Gets the deployments associated with the Cognitive Services account: https://learn.microsoft.com/en-us/rest/api/aiservices/accountmanagement/deployments/list
+# Requires Bearer Token authentication, and max 2025-04-01-preview API version
+GET https://management.azure.com/subscriptions/{{subscription_id}}/resourceGroups/{{resourcegroup_name}}/providers/Microsoft.CognitiveServices/accounts/{{azure_openai_service_name}}/deployments?api-version={{openai_api_version}}
+Authorization: Bearer {{bearertoken_for_azuremanagement}}
