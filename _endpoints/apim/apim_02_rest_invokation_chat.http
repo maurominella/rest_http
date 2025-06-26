@@ -9,7 +9,7 @@
 # apim_subscription_key_premium, apim_subscription_key_standard and apim_subscription_key_basic
 @apim-subscription-key = {{apim_subscription_key_premium}}
 ###
-POST {{apim_service_gatewayurl}}/{{apim_api_name}}/deployments/{{deployment_id}}/chat/completions?api-version={{apim-api-version}}
+POST {{apim_service_gatewayurl}}/{{apim_api_name}}/openai/deployments/{{deployment_id}}/chat/completions?api-version={{apim-api-version}}
 api-key: {{apim-subscription-key}}
 Content-Type: application/json
 

@@ -1,0 +1,39 @@
+# az login --scope https://api.powerplatform.com/.default
+# , followed by
+# az account get-access-token --resource https://api.powerplatform.com/
+
+@copilot_bot_url = https://directline.botframework.com/v3/directline/conversations
+@sender_id = "mauromi"
+@sender_name = "Mauro Minella"
+@question = "I need a plan for my next vacation in Australia"
+@conversation_id = <retrieve from the response of the first request>
+
+
+###
+# Start new conversation with Copilot Studio Agent
+POST {{copilot_bot_url}}
+Authorization: Bearer {{direct_line_secret}}
+Content-Type: application/json
+
+
+### 
+# Send a message to the bot
+POST {{copilot_bot_url}}/{{conversation_id}}/activities
+Authorization: Bearer {{direct_line_secret}}
+Content-Type: application/json
+
+{
+    "type": "message",
+    "from": {
+        "id": "{sender_id}",
+        "name": "{sender_name}"
+    },
+    "text": "{question}"
+}
+
+
+###
+# Poll the activities endpoint to get the bot's response
+GET {{copilot_bot_url}}/{{conversation_id}}/activities
+Authorization: Bearer {{direct_line_secret}}
+Content-Type: application/json
