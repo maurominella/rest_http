@@ -1,0 +1,16 @@
+@azfunction_host_name = raitvpiu.rai.it
+@azfunction_host_name = raitvpiu-telemetry-ingestion-cyc8d2hbbgesd4cp.westeurope-01.azurewebsites.net
+
+
+###
+POST https://{{azfunction_host_name}}/api/RaiTvPiuSendTelemetry
+Content-Type: application/json
+
+{
+  "telemetry": {
+    "timestamp": "2022-03-10T00:00:00Z",
+    "deviceId": "device001",
+    "temperature": 25.5,
+    "humidity": 50.0
+  }
+}
