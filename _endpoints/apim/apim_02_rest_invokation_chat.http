@@ -1,10 +1,9 @@
 # no bearer token required, just subscription key
 
 @apim-api-version = 2024-05-01-preview
-@backend-openai-pool-name = backend-openai-pool
 # Balanced Azure OpenAI Service API
 @apim_api_name = balanced-azure-openai-service-api
-@deployment_id = gpt-4.1-for-apim
+@deployment_id = gpt-4o-for-apim
 
 # apim_subscription_key_premium, apim_subscription_key_standard and apim_subscription_key_basic
 @apim-subscription-key = {{apim_subscription_key_premium}}
@@ -17,7 +16,7 @@ Content-Type: application/json
     "messages": [
       {
         "role": "user",
-        "content": "What is a meaning function?"
+        "content": "what is the nuclear fusion? explain in less than 20 words"
       }
     ],
     "temperature": 0,

@@ -1,14 +1,16 @@
 # https://learn.microsoft.com/en-us/azure/ai-services/agents/quickstart?pivots=rest-api
 # az account get-access-token --resource https://cognitiveservices.azure.com/
 
-@azure_deployment_name = gpt-4.1-for-apim
+@azure_deployment_name = gpt-4o-for-apim
  # The version of the OpenAI API to use, could be different from the latest version, e.g. 2025-04-01-preview / 2025-04-28
 @openai_api_version = 2025-04-01-preview
-@bearertoken_for_cognitiveservices = 
+@bearertoken_for_cognitiveservices = ****
+
+# @azure_openai_endpoint = https://mmoaiscus01.openai.azure.com/
 
 ###
 # Invoking OpenAI
-POST {{azure_openai_endpoint}}/openai/deployments/{{azure_deployment_name}}/chat/completions?api-version={{openai_api_version}}
+POST {{azure_openai_endpoint}}openai/deployments/{{azure_deployment_name}}/chat/completions?api-version={{openai_api_version}}
 Authorization: Bearer {{bearertoken_for_cognitiveservices}}
 Content-Type: application/json
 
@@ -16,7 +18,7 @@ Content-Type: application/json
     "messages": [
         {
             "role": "user",
-            "content": "What is a meaning function? Please summarize in less than 20 words."
+            "content": "what is the nuclear fusion? explain in less than 20 words"
         }
     ]
 }

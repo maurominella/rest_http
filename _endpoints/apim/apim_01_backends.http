@@ -1,15 +1,13 @@
 # az account get-access-token --resource https://management.core.windows.net/
-@bearertoken_for_azuremanagement = 
-
 @management_api_version = 2024-06-01-preview
-@apim_service_name = mauromiapim02
-@apim_resourcegroup= mmcognitivegrp
+@apim_service_name = aigov01apim
+@apim_resourcegroup= aigov01grp
 
-@backend_openai_main_name = backend_openai_main_mmoaiswc_01
+@backend_openai_main_name = backend_openai_main
 @backend_openai_main_url  = {{azure_openai_endpoint}}openai
 @backend_openai_main_apikey = {{azure_openai_apikey}}
 
-@backend_openai_fallback_name = backend_openai_fallback_mmoaiscus01
+@backend_openai_fallback_name = backend_openai_fallback
 @backend_openai_fallback_url  = {{azure_openai_scus_endpoint}}openai
 @backend_openai_fallback_apikey = {{azure_openai_scus_apikey}}
 
@@ -37,7 +35,7 @@ Content-Type: application/json
       "query": {},
         "header": {
             "api-key": [
-                "{{azure_openai_scus_apikey}}"
+                "{{backend_openai_fallback_apikey}}"
             ]
         },
         "skipCertificateChainValidation": false
