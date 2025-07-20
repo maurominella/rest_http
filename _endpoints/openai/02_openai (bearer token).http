@@ -1,16 +1,22 @@
 # https://learn.microsoft.com/en-us/azure/ai-services/agents/quickstart?pivots=rest-api
-# az account get-access-token --resource https://cognitiveservices.azure.com/
+# az login --use-device-code --tenant <your-tenant-id-or-domain>
+# az config set extension.dynamic_install_allow_preview=true
+# az account tenant list --output table
+# for Azure Management tasks --> az account get-access-token --resource https://management.core.windows.net/
+# for OpenAI tasks --> az account get-access-token --resource https://cognitiveservices.azure.com/
+# for Azure Search tasks --> az account get-access-token --resource https://search.azure.com/
+# for Machine Learning tasks --> az account get-access-token --resource https://ml.azure.com/ 
 
-@azure_deployment_name = gpt-4o-for-apim
- # The version of the OpenAI API to use, could be different from the latest version, e.g. 2025-04-01-preview / 2025-04-28
-@openai_api_version = 2025-04-01-preview
-@bearertoken_for_cognitiveservices = ****
+# OpenAI Endpoints:
+# - OpenAI main:     {{azure_openai_main_endpoint}}
+# - OpenAI fallback: {{azure_openai_fallback_endpoint}}
+# - APIM:            {{apim_service_gatewayurl}}/{{apim_api_name}}/, BUT App Registration in Entra ID is needed
 
-# @azure_openai_endpoint = https://mmoaiscus01.openai.azure.com/
+@azure_openai_endpoint = {{azure_openai_main_endpoint}}
 
 ###
 # Invoking OpenAI
-POST {{azure_openai_endpoint}}openai/deployments/{{azure_deployment_name}}/chat/completions?api-version={{openai_api_version}}
+POST {{azure_openai_endpoint}}openai/deployments/{{azure_openai_deployment_name}}/chat/completions?api-version={{azure_openai_api_version}}
 Authorization: Bearer {{bearertoken_for_cognitiveservices}}
 Content-Type: application/json
 

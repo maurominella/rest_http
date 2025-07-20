@@ -1,25 +1,28 @@
-# no bearer token required, just subscription key
+# NOTE: The same script is also included in the OpenAI folder, as it is a generic script that can be used with any OpenAI endpoint.
 
-@apim-api-version = 2024-05-01-preview
-# Balanced Azure OpenAI Service API
-@apim_api_name = balanced-azure-openai-service-api
-@deployment_id = gpt-4o-for-apim
+# https://learn.microsoft.com/en-us/azure/ai-services/agents/quickstart?pivots=rest-api
 
-# apim_subscription_key_premium, apim_subscription_key_standard and apim_subscription_key_basic
-@apim-subscription-key = {{apim_subscription_key_premium}}
+
+
+# OpenAI Endpoints:
+# - OpenAI main:     {{azure_openai_main_endpoint}}, {{azure_openai_main_apikey}}
+# - OpenAI fallback: {{azure_openai_fallback_endpoint}}, {{azure_openai_fallback_apikey}}
+# - APIM:            {{apim_service_gatewayurl}}/{{apim_api_name}}/, {{apim_subscription_key_premium}}
+
+@azure_openai_endpoint = {{apim_service_gatewayurl}}/{{apim_api_name}}/
+@azure_openai_apikey   = {{apim_subscription_key_premium}}
+
 ###
-POST {{apim_service_gatewayurl}}/{{apim_api_name}}/openai/deployments/{{deployment_id}}/chat/completions?api-version={{apim-api-version}}
-api-key: {{apim-subscription-key}}
+# Invoking OpenAI
+POST {{azure_openai_endpoint}}openai/deployments/{{azure_openai_deployment_name}}/chat/completions?api-version={{azure_openai_api_version}}
+Api-Key: {{azure_openai_apikey}}
 Content-Type: application/json
 
 {
     "messages": [
-      {
-        "role": "user",
-        "content": "what is the nuclear fusion? explain in less than 20 words"
-      }
-    ],
-    "temperature": 0,
-    "top_p": 1.0,    
-    "max_tokens": 500
+        {
+            "role": "user",
+            "content": "what is the nuclear fusion? explain in less than 20 words"
+        }
+    ]
 }

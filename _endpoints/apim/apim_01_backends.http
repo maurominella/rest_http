@@ -1,15 +1,17 @@
-# az account get-access-token --resource https://management.core.windows.net/
-@management_api_version = 2024-06-01-preview
-@apim_service_name = aigov01apim
-@apim_resourcegroup= aigov01grp
+# az login --use-device-code --tenant <your-tenant-id-or-domain>
+# az config set extension.dynamic_install_allow_preview=true
+# az account tenant list --output table
+# for Azure Management tasks --> az account get-access-token --resource https://management.core.windows.net/
+# for OpenAI tasks --> az account get-access-token --resource https://cognitiveservices.azure.com/
+# for Azure Search tasks --> az account get-access-token --resource https://search.azure.com/
 
 @backend_openai_main_name = backend_openai_main
-@backend_openai_main_url  = {{azure_openai_endpoint}}openai
-@backend_openai_main_apikey = {{azure_openai_apikey}}
+@backend_openai_main_url  = {{azure_openai_main_endpoint}}openai
+@backend_openai_main_apikey = {{azure_openai_main_apikey}}
 
 @backend_openai_fallback_name = backend_openai_fallback
-@backend_openai_fallback_url  = {{azure_openai_scus_endpoint}}openai
-@backend_openai_fallback_apikey = {{azure_openai_scus_apikey}}
+@backend_openai_fallback_url  = {{azure_openai_fallback_endpoint}}openai
+@backend_openai_fallback_apikey = {{azure_openai_fallback_apikey}}
 
 @backend_openai_pool_name = backend_openai_pool
 
@@ -17,7 +19,7 @@
 # Backend creation - Fallback with APIKEY authentication on Azure OpenAI
 # just remove "api-key" value from the "header" object to disable the APIKEY authentication
 # when APIKEY is missing or empty, then APIM has to be set as Cognitive Services OpenAI User for the OpenAI Services
-PUT https://management.azure.com/subscriptions/{{subscription_id}}/resourceGroups/{{apim_resourcegroup}}/providers/Microsoft.ApiManagement/service/{{apim_service_name}}/backends/{{backend_openai_fallback_name}}?api-version={{management_api_version}}
+PUT https://management.azure.com/subscriptions/{{subscription_id}}/resourceGroups/{{apim_resourcegroup}}/providers/Microsoft.ApiManagement/service/{{apim_service_name}}/backends/{{backend_openai_fallback_name}}?api-version={{azure_management_api_version}}
 Authorization: Bearer {{bearertoken_for_azuremanagement}}
 Content-Type: application/json
 
@@ -46,19 +48,19 @@ Content-Type: application/json
 
 ###
 # Backend retrieval
-GET https://management.azure.com/subscriptions/{{subscription_id}}/resourceGroups/{{apim_resourcegroup}}/providers/Microsoft.ApiManagement/service/{{apim_service_name}}/backends?api-version={{management_api_version}}
+GET https://management.azure.com/subscriptions/{{subscription_id}}/resourceGroups/{{apim_resourcegroup}}/providers/Microsoft.ApiManagement/service/{{apim_service_name}}/backends?api-version={{azure_management_api_version}}
 Authorization: Bearer {{bearertoken_for_azuremanagement}}
 
 
 ###
 # Backend deletion
-DELETE https://management.azure.com/subscriptions/{{subscription_id}}/resourceGroups/{{apim_resourcegroup}}/providers/Microsoft.ApiManagement/service/{{apim_service_name}}/backends/{{backend_openai_fallback_name}}?api-version={{management_api_version}}
+DELETE https://management.azure.com/subscriptions/{{subscription_id}}/resourceGroups/{{apim_resourcegroup}}/providers/Microsoft.ApiManagement/service/{{apim_service_name}}/backends/{{backend_openai_fallback_name}}?api-version={{azure_management_api_version}}
 Authorization: Bearer {{bearertoken_for_azuremanagement}}
 
 
 ###
 # Backend creation - Main with Circuit Breaker
-PUT https://management.azure.com/subscriptions/{{subscription_id}}/resourceGroups/{{apim_resourcegroup}}/providers/Microsoft.ApiManagement/service/{{apim_service_name}}/backends/{{backend_openai_main_name}}?api-version={{management_api_version}}
+PUT https://management.azure.com/subscriptions/{{subscription_id}}/resourceGroups/{{apim_resourcegroup}}/providers/Microsoft.ApiManagement/service/{{apim_service_name}}/backends/{{backend_openai_main_name}}?api-version={{azure_management_api_version}}
 Authorization: Bearer {{bearertoken_for_azuremanagement}}
 Content-Type: application/json
 
@@ -88,7 +90,7 @@ Content-Type: application/json
           "tripDuration": "PT1M",
           "acceptRetryAfter": "false",
           "failureCondition": {
-            "count": "3",
+            "count": "1",
             "interval": "PT10S",
             "statusCodeRanges": [
               {
@@ -106,7 +108,7 @@ Content-Type: application/json
 
 ###
 # Backend creation - Pool
-PUT https://management.azure.com/subscriptions/{{subscription_id}}/resourceGroups/{{apim_resourcegroup}}/providers/Microsoft.ApiManagement/service/{{apim_service_name}}/backends/{{backend_openai_pool_name}}?api-version={{management_api_version}}
+PUT https://management.azure.com/subscriptions/{{subscription_id}}/resourceGroups/{{apim_resourcegroup}}/providers/Microsoft.ApiManagement/service/{{apim_service_name}}/backends/{{backend_openai_pool_name}}?api-version={{azure_management_api_version}}
 Authorization: Bearer {{bearertoken_for_azuremanagement}}
 Content-Type: application/json
 

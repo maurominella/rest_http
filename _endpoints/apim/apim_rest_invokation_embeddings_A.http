@@ -1,11 +1,25 @@
 # Embedding creation - POST
 @deployment-id = embeddings-for-apim
 @apimApiVersion    = 2023-05-01-preview
+
+
+
+# OpenAI Endpoints:
+# - OpenAI main:     {{azure_openai_main_endpoint}}, {{azure_openai_main_apikey}}
+# - OpenAI fallback: {{azure_openai_fallback_endpoint}}, {{azure_openai_fallback_apikey}}
+# - APIM:            {{apim_service_gatewayurl}}/{{apim_api_name}}/, {{apim_subscription_key_premium}}
+
+@azure_openai_endpoint = {{apim_service_gatewayurl}}/{{apim_api_name}}/
+@azure_openai_apikey   = {{apim_subscription_key_premium}}
+
+
+
 @APIM-API-Endpoint = https://genaihackapim.azure-api.net
 @APIM-API-Name = balanced-azure-openai-service-api
 @APIM-API-Operation-Path = openai/deployments/{{deployment-id}}/embeddings
 
 POST {{APIM-API-Endpoint}}/{{APIM-API-Name}}/{{APIM-API-Operation-Path}}?api-version={{apimApiVersion}}
+POST {{azure_openai_endpoint}}openai/deployments/{{azure_deployment_name}}/chat/completions?api-version={{openai_api_version}}
 
 POST {{APIM-API-Endpoint}}{{APIM-API-Operation-Path}}
 api-key: {{apim_subscription_key_service}}
