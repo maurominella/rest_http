@@ -1,4 +1,6 @@
-# az login --use-device-code --tenant <your-tenant-id-or-domain>
+# az login --use-device-code
+# to select a subscription --> az account set --subscription <your-subscription-id>
+# to select a specific tenant --> az account set --tenant <your-tenant-id-or-domain>
 # az config set extension.dynamic_install_allow_preview=true
 # az account tenant list --output table
 # for Azure Management tasks --> az account get-access-token --resource https://management.core.windows.net/
