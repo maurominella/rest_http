@@ -1,0 +1,71 @@
+# https://github.com/orgs/azure-ai-foundry/discussions/59
+# https://learn.microsoft.com/en-us/azure/ai-services/agents/quickstart?pivots=rest-api
+# az login --use-device-code --tenant <your-tenant-id-or-domain>
+# az config set extension.dynamic_install_allow_preview=true
+# az account tenant list --output table
+# for Azure Management tasks --> az account get-access-token --resource https://management.core.windows.net/
+# for Azure Capability Hosts Management tasks --> az account get-access-token --resource https://management.azure.com/
+# for OpenAI tasks --> az account get-access-token --resource https://cognitiveservices.azure.com/
+# for Azure Search tasks --> az account get-access-token --resource https://search.azure.com/
+# for Machine Learning tasks --> az account get-access-token --resource https://ml.azure.com/ 
+
+# OpenAI Endpoints:
+# - OpenAI main:     {{azure_openai_main_endpoint}}
+# - OpenAI fallback: {{azure_openai_fallback_endpoint}}
+# - APIM:            {{apim_service_gatewayurl}}/{{apim_api_name}}/, BUT App Registration in Entra ID is needed
+
+# https://learn.microsoft.com/en-us/azure/ai-services/agents/quickstart?pivots=rest-api
+
+
+# OpenAI Endpoints:
+# - OpenAI main:     {{azure_openai_main_endpoint}}, {{azure_openai_main_apikey}}
+# - OpenAI fallback: {{azure_openai_fallback_endpoint}}, {{azure_openai_fallback_apikey}}
+# - APIM:            {{apim_service_gatewayurl}}/{{apim_api_name}}/, {{apim_subscription_key_premium}}
+
+@azure_openai_endpoint = {{apim_service_gatewayurl}}/{{apim_api_name}}
+@azure_openai_apikey   = {{apim_subscription_key_premium}}
+
+@azure_aiservices_resourcegroupname = aif1basrg
+@ai-services-resource = aif1bassvj36b
+@account_cap_host_name = aif1basswcprj03caphost
+
+
+@connection-name-of-aoai-resource = mmoaiswc01
+@connection-name-of-apim-resource = openai_via_apim
+
+@project_name = aif1basswcprj05
+@project_capability_host_name = aif1basswcprj05caphost
+
+###
+# Create account capability host
+PUT https://management.azure.com/subscriptions/{{subscription_id}}/resourceGroups/{{azure_aiservices_resourcegroupname}}/providers/Microsoft.CognitiveServices/accounts/{{ai-services-resource}}/capabilityHosts/{{account_cap_host_name}}?api-version={{azure_management_api_version_new}}
+Authorization: Bearer {{bearertoken_for_capabilityhosts}}
+Content-Type: application/json
+User-Agent: insomnia/11.0.1
+
+{
+    "properties": {
+        "capabilityHostKind": "Agents"
+    }
+}
+
+###
+# Create project capability host
+PUT https://management.azure.com/subscriptions/{{subscription_id}}/resourceGroups/{{azure_aiservices_resourcegroupname}}/providers/Microsoft.CognitiveServices/accounts/{{ai-services-resource}}/projects/{{project_name}}/capabilityHosts/{{project_capability_host_name}}?api-version={{azure_management_api_version_new}}
+Authorization: Bearer {{bearertoken_for_capabilityhosts}}
+Content-Type: application/json
+User-Agent: insomnia/11.0.1
+
+{
+    "properties": {
+        "capabilityHostKind": "Agents",
+        "aiServicesConnections": ["{{connection-name-of-apim-resource}}"]
+    }
+}
+        
+###
+# Delete project capability host
+DELETE https://management.azure.com/subscriptions/{{subscription_id}}/resourceGroups/{{azure_aiservices_resourcegroupname}}/providers/Microsoft.CognitiveServices/accounts/{{ai-services-resource}}/projects/{{project_name}}/capabilityHosts/{{project_capability_host_name}}?api-version={{azure_management_api_version_new}}
+Authorization: Bearer {{bearertoken_for_capabilityhosts}}
+Content-Type: application/json
+

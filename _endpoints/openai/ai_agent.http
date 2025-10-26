@@ -54,3 +54,21 @@ Content-Type: application/json
 GET {{agents-service_endpoint}}/threads/{{thread_id}}/runs/{{run_id}}?api-version=2024-12-01-preview
 Authorization: Bearer {{token}}
 Content-Type: application/json
+
+###
+# invoke the agent via local HTTP endpoint for OpenAI
+POST http://localhost:5004/chat/openai
+Content-Type: application/json
+
+{
+    "input": "Never mind the weather, how's the food?"
+}
+
+###
+# invoke the agent via local HTTP endpoint for Foundry
+POST http://localhost:5004/chat/foundry
+Content-Type: application/json
+
+{
+    "input": "Which animal is known for building dams?"
+}

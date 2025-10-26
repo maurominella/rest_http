@@ -1,5 +1,4 @@
-@azfunction_host_name = raitvpiu.rai.it
-@azfunction_host_name = raitvpiu-telemetry-ingestion-cyc8d2hbbgesd4cp.westeurope-01.azurewebsites.net
+@azfunction_host_name = raitvpiu-telemetry.rai.it
 
 
 ###

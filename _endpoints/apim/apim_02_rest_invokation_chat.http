@@ -22,7 +22,7 @@ Content-Type: application/json
     "messages": [
         {
             "role": "user",
-            "content": "what is the nuclear fusion? explain in less than 20 words"
+            "content": "what is the nuclear fusion? explain in less than 15 words"
         }
     ]
 }
