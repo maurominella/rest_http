@@ -1,0 +1,35 @@
+# Documentation: https://learn.microsoft.com/en-us/azure/ai-services/content-understanding/tutorial/build-person-directory#enrollment
+# az login --use-device-code --tenant <your-tenant-id-or-domain>
+# az config set extension.dynamic_install_allow_preview=true
+# az account tenant list --output table
+# for Azure Management tasks --> az account get-access-token --resource https://management.core.windows.net/
+# for OpenAI tasks --> az account get-access-token --resource https://cognitiveservices.azure.com/
+# for Azure Search tasks --> az account get-access-token --resource https://search.azure.com/
+# for Machine Learning tasks --> az account get-access-token --resource https://ml.azure.com/ 
+
+# OpenAI Endpoints:
+# - OpenAI main:     {{azure_openai_main_endpoint}}
+# - OpenAI fallback: {{azure_openai_fallback_endpoint}}
+# - APIM:            {{apim_service_gatewayurl}}/{{apim_api_name}}/, BUT App Registration in Entra ID is needed
+
+@personDirectoryId = mauromi0001
+
+###
+# Invoking Document Intelligence with API Key
+PUT {{foundry_openai_endpoint}}contentunderstanding/personDirectories/{{personDirectoryId}}?api-version={{foundry_openai_api_version_preview}}
+Ocp-Apim-Subscription-Key: {{foundry_openai_key}}
+Content-Type: application/json
+
+{
+  "description": "A brief description of the directory",
+  "tags": {
+    "project": "example-project",
+    "owner": "team-name"
+  }
+}
+
+###
+# Invoking Document Intelligence with Bearer Token
+GET {{foundry_openai_endpoint}}contentunderstanding/personDirectories/{{personDirectoryId}}?api-version={{foundry_openai_api_version_preview}}
+Authorization: Bearer {{foundry_openai_bearer_token}}
+Content-Type: application/json
