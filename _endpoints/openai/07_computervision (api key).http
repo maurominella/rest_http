@@ -1,0 +1,6 @@
+@api_version = "2023-10-01" 
+@features = "Caption"
+
+POST {{VISION_ENDPOINT}}/imageanalysis:analyze?api-version={{api_version}}&features={{features}}&model-version=latest
+Api-Key: {{VISION_API_KEY}}
+Content-Type: application/octet-stream

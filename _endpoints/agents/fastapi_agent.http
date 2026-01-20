@@ -1,0 +1,17 @@
+@baseUrl = http://127.0.0.1:8080
+
+POST {{baseUrl}}/echo
+Content-Type: application/json
+ 
+{
+    "message": "Hello world!"
+}
+
+## in the cloud
+###
+POST https://mmaca01.salmonsky-91ddf368.swedencentral.azurecontainerapps.io/echo
+Content-Type: application/json
+
+{
+  "message": "ciao a tutti!"
+}
