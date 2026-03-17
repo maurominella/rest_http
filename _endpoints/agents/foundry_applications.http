@@ -1,0 +1,22 @@
+# https://learn.microsoft.com/en-us/azure/ai-services/agents/quickstart?pivots=rest-api
+# az login --use-device-code --tenant <your-tenant-id-or-domain>
+# az config set extension.dynamic_install_allow_preview=true
+# az account tenant list --output table
+# for Azure Management tasks --> az account get-access-token --resource https://management.core.windows.net/
+# for Foundry Applications --> az account get-access-token --resource https://ai.azure.com/
+# for OpenAI tasks --> az account get-access-token --resource https://cognitiveservices.azure.com/
+# for Azure Search tasks --> az account get-access-token --resource https://search.azure.com/
+# for Machine Learning tasks --> az account get-access-token --resource https://ml.azure.com/ 
+
+
+@application_endpoint = https://aifv2-01-std-foundry.services.ai.azure.com/api/projects/aifv2-01-std-foundryproj01-default/applications/foundryagent-V2-with-bing/protocols/openai/responses?api-version=2025-11-15-preview
+
+###
+# Invoking OpenAI
+POST {{application_endpoint}}
+Authorization: Bearer {{bearertoken_for_aiazurecom}}
+Content-Type: application/json
+
+{
+    "input": "Where is Seattle?"
+}
