@@ -9,14 +9,34 @@
 # for Machine Learning tasks --> az account get-access-token --resource https://ml.azure.com/ 
 
 
-@application_endpoint = https://aifv2-01-std-foundry.services.ai.azure.com/api/projects/aifv2-01-std-foundryproj01-default/applications/foundryagent-V2-with-bing/protocols/openai/responses?api-version=2025-11-15-preview
+@resource_group = aifv2-01-std-rg
+@foundry_account = aifv2-01-std-foundry
+@foundry_project = aifv2-01-std-foundryproj01-default
+@foundry_application = foundryagent-V2-with-bing
+@foundry_agent_published = foundryagent-V2-with-bing
+@foundry_agent_to_publish =TranslatorAgent01
+@api_version_for_openai = 2025-11-15-preview
+@api_version_for_management = 2025-10-01-preview
+
 
 ###
 # Invoking OpenAI
-POST {{application_endpoint}}
+POST https://{{foundry_account}}.services.ai.azure.com/api/projects/{{foundry_project}}/applications/{{foundry_application}}/protocols/openai/responses?api-version={{api_version_for_openai}}
 Authorization: Bearer {{bearertoken_for_aiazurecom}}
 Content-Type: application/json
 
 {
-    "input": "Where is Seattle?"
+    "input": "Where is Seattle? How is the weather there today?"
+}
+
+###
+# Invoking OpenAI bearertoken_for_aiazurecom bearertoken_for_management
+PUT https://management.azure.com/subscriptions/{{subscription_id}}/resourceGroups/{{resource_group}}/providers/Microsoft.CognitiveServices/accounts/{{foundry_account}}/projects/{{foundry_project}}/applications/{{foundry_agent_to_publish}}?api-version={{api_version_for_management}}
+Authorization: Bearer {{bearertoken_for_management}}
+Content-Type: application/json
+
+{
+  "properties":{
+    "agents": [{"agentName": "{{foundry_agent_to_publish}}"}]
+  }
 }
