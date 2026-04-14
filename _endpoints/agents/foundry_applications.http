@@ -9,13 +9,13 @@
 # for Machine Learning tasks --> az account get-access-token --resource https://ml.azure.com/ 
 
 
-@resource_group = rg-aifoundry9918
+@resource_group = rg-aifoundry7159
 
-@foundry_account = foundry9918
-@foundry_project = aif9918-standard-agent-project
-@foundry_application = aif9918-agent01
-@foundry_agent_published = aif9918-agent01
-@foundry_agent_to_publish =aif9918-agent01
+@foundry_account = foundry7159
+@foundry_project = aif7159-standard-agent-project
+@foundry_application = promptagent-01
+@foundry_agent_published = promptagent-01
+@foundry_agent_to_publish = promptagent-01
 @api_version_for_openai = 2025-11-15-preview
 @api_version_for_management = 2025-10-01-preview
 
