@@ -1,0 +1,46 @@
+@directLineBaseUrl = https://directline.botframework.com/v3/directline
+@directLineSecret = {{bot_directline_secret}}
+@conversationId = BH5SLsJIKqL1itdY5yLjru-fr
+@userId = mauromi-local
+@userName = Mauro Minella
+@question = Where is Sydney? What is the current time there?
+
+###
+# 0) Just BOT invokation example (without Direct Line API)
+POST https://92pvnf5z-3978.euw.devtunnels.ms/api/messages
+Content-Type: application/json
+ 
+{
+    "input": "Where is Sydney? What is the current time there?"
+}
+
+###
+# 1) Start a new Direct Line conversation
+POST {{directLineBaseUrl}}/conversations
+Authorization: Bearer {{directLineSecret}}
+Content-Type: application/json
+
+{}
+
+###
+# 2) Send a message activity to the conversation
+POST {{directLineBaseUrl}}/conversations/{{conversationId}}/activities
+Authorization: Bearer {{directLineSecret}}
+Content-Type: application/json
+
+{
+    "type": "message",
+    "from": {
+        "id": "{{userId}}",
+        "name": "{{userName}}"
+    },
+    "text": "{{question}}",
+    "textFormat": "plain",
+    "locale": "en-US"
+}
+
+###
+# 3) Read activities (bot replies)
+GET {{directLineBaseUrl}}/conversations/{{conversationId}}/activities
+Authorization: Bearer {{directLineSecret}}
+Content-Type: application/json
