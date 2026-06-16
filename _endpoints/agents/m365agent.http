@@ -1,6 +1,6 @@
 @directLineBaseUrl = https://directline.botframework.com/v3/directline
 @directLineSecret = {{bot_directline_secret}}
-@conversationId = BH5SLsJIKqL1itdY5yLjru-fr
+@conversationId = 1iUmuuV4ZMCGHGMwgwv4y5-fr
 @userId = mauromi-local
 @userName = Mauro Minella
 @question = Where is Sydney? What is the current time there?

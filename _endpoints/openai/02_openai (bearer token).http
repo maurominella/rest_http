@@ -4,6 +4,7 @@
 # az account tenant list --output table
 # for Azure Management tasks --> az account get-access-token --resource https://management.core.windows.net/
 # for OpenAI tasks --> az account get-access-token --resource https://cognitiveservices.azure.com/
+# for Foundry Applications --> az account get-access-token --resource https://ai.azure.com/
 # for Azure Search tasks --> az account get-access-token --resource https://search.azure.com/
 # for Machine Learning tasks --> az account get-access-token --resource https://ml.azure.com/ 
 
@@ -13,9 +14,13 @@
 # - APIM:            {{apim_service_gatewayurl}}/{{apim_api_name}}/, BUT App Registration in Entra ID is needed
 
 @azure_openai_endpoint = {{azure_openai_main_endpoint}}
+@agent_name = ha02-azureopenaiagent
+@agent_version = 3
+
+@query = Can you help me find available hotels in Seattle for a stay from April 25th to April 28th with a budget of $200 per night?
 
 ###
-# Invoking OpenAI
+# Invoking OpenAI - CHAT COMPLETIONS
 POST {{azure_openai_endpoint}}openai/deployments/{{azure_openai_deployment_name}}/chat/completions?api-version={{azure_openai_api_version}}
 Authorization: Bearer {{bearertoken_for_cognitiveservices}}
 Content-Type: application/json
@@ -27,4 +32,17 @@ Content-Type: application/json
             "content": "what is the nuclear fusion? explain in less than 20 words"
         }
     ]
+}
+
+
+
+###
+# Invoking OpenAI - RESPONSES
+# https://<account>.services.ai.azure.com/api/projects/<project>/agents/<agentName>/endpoint/protocols/openai/responses
+POST {{foundry_project_endpoint}}/agents/{{agent_name}}/endpoint/protocols/openai/responses?api-version={{azure_openai_responses_api_version}}
+Authorization: Bearer {{bearertoken_for_aiazurecom}}
+Content-Type: application/json
+
+{
+    "input": "{{query}}"
 }

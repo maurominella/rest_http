@@ -1,0 +1,13 @@
+@baseUrl = https://foundry7159.services.ai.azure.com/api/projects/aif7159-standard-agent-project
+
+@agent_name = ha03-echoagent-fmi-path
+
+###
+# RInvoke Foundry agent through A2A protocol
+POST {{baseUrl}}/agents/{{agent_name}}/endpoint/protocols/a2a
+Content-Type: application/json
+Authorization: Bearer {{bearertoken_for_aiazurecom}}
+ 
+{
+    "input": "Where is Sydney? What is the current time there?"
+}

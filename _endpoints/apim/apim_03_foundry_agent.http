@@ -1,0 +1,67 @@
+# =============================================================================
+# Expose a Foundry hosted-agent (Project endpoint) through Azure API Management
+# Target APIM: mmapim04  (resource group: apps_grp, region: swedencentral)
+# =============================================================================
+#
+# Foundry project endpoint to expose:
+#   https://foundry7159.services.ai.azure.com/api/projects/aif7159-standard-agent-project
+#
+# Auth approach (decided): PASS-THROUGH of the caller's bearer token.
+#   APIM will forward to Foundry the same token the user used to authenticate
+#   against APIM (no managed identity). This file only creates the BACKEND;
+#   the policy that performs the pass-through will be added in a later step.
+#
+# -----------------------------------------------------------------------------
+# Token needed:
+#   for Azure Management tasks --> az account get-access-token --resource https://management.core.windows.net/
+# -----------------------------------------------------------------------------
+
+
+# ---- APIM target (mmapim04) -------------------------------------------------
+
+# ---- Foundry target (the project endpoint to expose) ------------------------
+# ---- Backend to create ------------------------------------------------------
+@apim_foundry_backend_name = backend_foundry_agent
+
+
+###############################################################################
+# STEP 1 — Create the APIM backend pointing to the Foundry PROJECT endpoint
+###############################################################################
+# No credentials here: with the pass-through approach the Authorization header
+# is carried/forwarded by the API policy (added later), not stored on the backend.
+PUT https://management.azure.com/subscriptions/{{subscription_id}}/resourceGroups/{{apim_resourcegroup}}/providers/Microsoft.ApiManagement/service/{{apim_service_name}}/backends/{{apim_foundry_backend_name}}?api-version={{azure_management_api_version}}
+Authorization: Bearer {{bearertoken_for_azuremanagement}}
+Content-Type: application/json
+
+{
+  "properties": {
+    "title": "{{apim_foundry_backend_name}}",
+    "description": "Foundry project endpoint - {{foundry_project_endpoint}}",
+    "url": "{{foundry_project_endpoint}}",
+    "protocol": "http",
+    "tls": {
+      "validateCertificateChain": true,
+      "validateCertificateName": true
+    }
+  }
+}
+
+
+###############################################################################
+# Helpers
+###############################################################################
+
+###
+# Retrieve the backend
+GET https://management.azure.com/subscriptions/{{subscription_id}}/resourceGroups/{{apim_resourcegroup}}/providers/Microsoft.ApiManagement/service/{{apim_service_name}}/backends/{{apim_foundry_backend_name}}?api-version={{azure_management_api_version}}
+Authorization: Bearer {{bearertoken_for_azuremanagement}}
+
+###
+# List all backends
+GET https://management.azure.com/subscriptions/{{subscription_id}}/resourceGroups/{{apim_resourcegroup}}/providers/Microsoft.ApiManagement/service/{{apim_service_name}}/backends?api-version={{azure_management_api_version}}
+Authorization: Bearer {{bearertoken_for_azuremanagement}}
+
+###
+# Delete the backend
+DELETE https://management.azure.com/subscriptions/{{subscription_id}}/resourceGroups/{{apim_resourcegroup}}/providers/Microsoft.ApiManagement/service/{{apim_service_name}}/backends/{{apim_foundry_backend_name}}?api-version={{azure_management_api_version}}
+Authorization: Bearer {{bearertoken_for_azuremanagement}}

@@ -1,0 +1,33 @@
+# https://learn.microsoft.com/en-us/azure/ai-services/agents/quickstart?pivots=rest-api
+# az login --use-device-code --tenant <your-tenant-id-or-domain>
+# az config set extension.dynamic_install_allow_preview=true
+# az account tenant list --output table
+# for Azure Management tasks --> az account get-access-token --resource https://management.core.windows.net/
+# for Foundry Applications --> az account get-access-token --resource https://ai.azure.com/
+# for OpenAI tasks --> az account get-access-token --resource https://cognitiveservices.azure.com/
+# for Azure Search tasks --> az account get-access-token --resource https://search.azure.com/
+# for Machine Learning tasks --> az account get-access-token --resource https://ml.azure.com/ 
+
+# APP_OBJ_ID=36dc7b8a-eb7d-4f66-b3fa-7649893ceed6; echo $APP_OBJ_ID
+# APP_ID_URI=$(az ad app show --id $APP_OBJ_ID --query "identifierUris[0]" -o tsv | tr -d '\r'); echo $APP_ID_URI
+# SCOPE_VALUE=$(az ad app show --id $APP_OBJ_ID --query "api.oauth2PermissionScopes[0].value" -o tsv | tr -d '\r'); echo $SCOPE_VALUE
+# TOKEN=$(az account get-access-token --scope "${APP_ID_URI}/${SCOPE_VALUE}" --query accessToken -o tsv); echo $TOKEN
+
+@baseUrl = http://localhost:8000
+
+POST {{baseUrl}}/get_my_profile
+Content-Type: application/json
+Authorization: Bearer {{bearertoken_for_copilotapp}}
+
+{
+    "input": "What is my office location?"
+}
+
+###
+POST {{baseUrl}}/get_onedrive_root_folders
+Content-Type: application/json
+Authorization: Bearer {{bearertoken_for_copilotapp}}
+
+{
+    "input": "What are the folders of my OneDrive account?"
+}
