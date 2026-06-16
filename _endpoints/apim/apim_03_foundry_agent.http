@@ -1,10 +1,14 @@
 # =============================================================================
-# Expose a Foundry hosted-agent (Project endpoint) through Azure API Management
+# Expose the Foundry Project endpoint (OpenAI-compatible) through Azure API Management
 # Target APIM: mmapim04  (resource group: apps_grp, region: swedencentral)
 # =============================================================================
 #
 # Foundry project endpoint to expose:
 #   https://foundry7159.services.ai.azure.com/api/projects/aif7159-standard-agent-project
+#
+# This endpoint is 100% OpenAI-compatible (Responses API). The backend points to
+# the PROJECT (not to a specific agent); the agent is selected per-request in the
+# URL path: /agents/{agentName}/endpoint/protocols/openai/responses
 #
 # Auth approach (decided): PASS-THROUGH of the caller's bearer token.
 #   APIM will forward to Foundry the same token the user used to authenticate
@@ -21,7 +25,24 @@
 
 # ---- Foundry target (the project endpoint to expose) ------------------------
 # ---- Backend to create ------------------------------------------------------
-@apim_foundry_backend_name = backend_foundry_agent
+@apim_foundry_backend_name = backend_foundry_project_openai
+
+# ---- API / operation to create (to actually invoke the backend) -------------
+@apim_foundry_api_name      = foundry-agent-api
+@apim_foundry_api_path      = foundry
+@apim_foundry_operation_id  = invoke-agent-responses
+
+# Name of the hosted agent to invoke (selected per-request in the URL path)
+@foundry_agent_name         = ha02-azureopenaiagent
+
+# APIM subscription key (must belong to a product that includes this API)
+@apim_foundry_subscription_key = {{apim_subscription_key_unlimited}}
+
+# APIM product that the subscription key above belongs to (the new API must be
+# linked to this product, otherwise APIM returns 401 on the gateway call)
+@apim_foundry_product_id = unlimited
+
+@query = Can you help me find available hotels in Seattle for a stay from April 25th to April 28th with a budget of $200 per night?
 
 
 ###############################################################################
@@ -36,7 +57,7 @@ Content-Type: application/json
 {
   "properties": {
     "title": "{{apim_foundry_backend_name}}",
-    "description": "Foundry project endpoint - {{foundry_project_endpoint}}",
+    "description": "Foundry Project OpenAI-compatible endpoint (Responses API) - {{foundry_project_endpoint}}",
     "url": "{{foundry_project_endpoint}}",
     "protocol": "http",
     "tls": {
@@ -44,6 +65,115 @@ Content-Type: application/json
       "validateCertificateName": true
     }
   }
+}
+
+
+###############################################################################
+# STEP 2 — Create the API (the public surface exposed by APIM)
+###############################################################################
+# subscriptionRequired=true -> callers must send Ocp-Apim-Subscription-Key.
+# serviceUrl is optional here because STEP 4 routes to the backend via policy,
+# but it is set for clarity/consistency.
+PUT https://management.azure.com/subscriptions/{{subscription_id}}/resourceGroups/{{apim_resourcegroup}}/providers/Microsoft.ApiManagement/service/{{apim_service_name}}/apis/{{apim_foundry_api_name}}?api-version={{azure_management_api_version}}
+Authorization: Bearer {{bearertoken_for_azuremanagement}}
+Content-Type: application/json
+
+{
+  "properties": {
+    "displayName": "Foundry Agent API",
+    "description": "OpenAI-compatible (Responses API) surface for Foundry hosted agents",
+    "path": "{{apim_foundry_api_path}}",
+    "protocols": [ "https" ],
+    "subscriptionRequired": true,
+    "serviceUrl": "{{foundry_project_endpoint}}"
+  }
+}
+
+
+###############################################################################
+# STEP 3 — Create the POST operation (the agent is chosen in the URL path)
+###############################################################################
+# Path template mirrors the Foundry per-agent Responses endpoint:
+#   /agents/{agentName}/endpoint/protocols/openai/responses
+PUT https://management.azure.com/subscriptions/{{subscription_id}}/resourceGroups/{{apim_resourcegroup}}/providers/Microsoft.ApiManagement/service/{{apim_service_name}}/apis/{{apim_foundry_api_name}}/operations/{{apim_foundry_operation_id}}?api-version={{azure_management_api_version}}
+Authorization: Bearer {{bearertoken_for_azuremanagement}}
+Content-Type: application/json
+
+{
+  "properties": {
+    "displayName": "Invoke Agent (Responses API)",
+    "method": "POST",
+    "urlTemplate": "/agents/{agentName}/endpoint/protocols/openai/responses",
+    "templateParameters": [
+      {
+        "name": "agentName",
+        "description": "Name of the hosted agent in the Foundry project",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "request": {
+      "queryParameters": [
+        {
+          "name": "api-version",
+          "description": "Foundry/OpenAI Responses API version",
+          "type": "string",
+          "required": true
+        }
+      ]
+    }
+  }
+}
+
+
+###############################################################################
+# STEP 4 — Apply the API policy: route to the Foundry backend (pass-through)
+###############################################################################
+# set-backend-service points the request to the backend created in STEP 1.
+# The caller's Authorization header is forwarded as-is to Foundry (pass-through),
+# while APIM strips the Ocp-Apim-Subscription-Key before forwarding.
+PUT https://management.azure.com/subscriptions/{{subscription_id}}/resourceGroups/{{apim_resourcegroup}}/providers/Microsoft.ApiManagement/service/{{apim_service_name}}/apis/{{apim_foundry_api_name}}/policies/policy?api-version={{azure_management_api_version}}
+Authorization: Bearer {{bearertoken_for_azuremanagement}}
+Content-Type: application/json
+
+{
+  "properties": {
+    "format": "rawxml",
+    "value": "<policies>\n  <inbound>\n    <base />\n    <set-backend-service backend-id=\"{{apim_foundry_backend_name}}\" />\n  </inbound>\n  <backend>\n    <base />\n  </backend>\n  <outbound>\n    <base />\n  </outbound>\n  <on-error>\n    <base />\n  </on-error>\n</policies>"
+  }
+}
+
+
+###############################################################################
+# STEP 4b — Link the API to a PRODUCT (required to authorize the subscription key)
+###############################################################################
+# An APIM subscription key is scoped to a PRODUCT. The new API must be added to
+# the product your key belongs to, otherwise the gateway returns:
+#   401 "Access denied due to invalid subscription key or wrong API endpoint".
+# Set @apim_foundry_product_id to the product owning your key (see helpers below).
+PUT https://management.azure.com/subscriptions/{{subscription_id}}/resourceGroups/{{apim_resourcegroup}}/providers/Microsoft.ApiManagement/service/{{apim_service_name}}/products/{{apim_foundry_product_id}}/apis/{{apim_foundry_api_name}}?api-version={{azure_management_api_version}}
+Authorization: Bearer {{bearertoken_for_azuremanagement}}
+Content-Type: application/json
+
+{}
+
+
+###############################################################################
+# STEP 5 — Invoke the agent THROUGH APIM
+###############################################################################
+# Auth model (pass-through):
+#   - Ocp-Apim-Subscription-Key authenticates the caller AGAINST APIM.
+#   - Authorization: Bearer <token for https://ai.azure.com> is forwarded to
+#     Foundry. Get it with:
+#       az account get-access-token --resource https://ai.azure.com/
+#     (stored here as {{bearertoken_for_aiazurecom}}).
+POST {{apim_service_gatewayurl}}/{{apim_foundry_api_path}}/agents/{{foundry_agent_name}}/endpoint/protocols/openai/responses?api-version={{azure_openai_responses_api_version}}
+Ocp-Apim-Subscription-Key: {{apim_foundry_subscription_key}}
+Authorization: Bearer {{bearertoken_for_aiazurecom}}
+Content-Type: application/json
+
+{
+  "input": "{{query}}"
 }
 
 
@@ -64,4 +194,19 @@ Authorization: Bearer {{bearertoken_for_azuremanagement}}
 ###
 # Delete the backend
 DELETE https://management.azure.com/subscriptions/{{subscription_id}}/resourceGroups/{{apim_resourcegroup}}/providers/Microsoft.ApiManagement/service/{{apim_service_name}}/backends/{{apim_foundry_backend_name}}?api-version={{azure_management_api_version}}
+Authorization: Bearer {{bearertoken_for_azuremanagement}}
+
+###
+# List all PRODUCTS (find the product id that owns your subscription key)
+GET https://management.azure.com/subscriptions/{{subscription_id}}/resourceGroups/{{apim_resourcegroup}}/providers/Microsoft.ApiManagement/service/{{apim_service_name}}/products?api-version={{azure_management_api_version}}
+Authorization: Bearer {{bearertoken_for_azuremanagement}}
+
+###
+# List all SUBSCRIPTIONS (shows which product each key belongs to: scope + state)
+GET https://management.azure.com/subscriptions/{{subscription_id}}/resourceGroups/{{apim_resourcegroup}}/providers/Microsoft.ApiManagement/service/{{apim_service_name}}/subscriptions?api-version={{azure_management_api_version}}
+Authorization: Bearer {{bearertoken_for_azuremanagement}}
+
+###
+# List the APIs currently linked to a PRODUCT (verify STEP 4b worked)
+GET https://management.azure.com/subscriptions/{{subscription_id}}/resourceGroups/{{apim_resourcegroup}}/providers/Microsoft.ApiManagement/service/{{apim_service_name}}/products/{{apim_foundry_product_id}}/apis?api-version={{azure_management_api_version}}
 Authorization: Bearer {{bearertoken_for_azuremanagement}}

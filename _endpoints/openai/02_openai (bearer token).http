@@ -22,14 +22,14 @@
 ###
 # Invoking OpenAI - CHAT COMPLETIONS
 POST {{azure_openai_endpoint}}openai/deployments/{{azure_openai_deployment_name}}/chat/completions?api-version={{azure_openai_api_version}}
-Authorization: Bearer {{bearertoken_for_cognitiveservices}}
+Authorization: Bearer {{bearertoken_for_aiazurecom}}
 Content-Type: application/json
 
 {
     "messages": [
         {
             "role": "user",
-            "content": "what is the nuclear fusion? explain in less than 20 words"
+            "content": "Can you help me find available hotels in Seattle for a stay from April 25th to April 28th with a budget of $200 per night?"
         }
     ]
 }
