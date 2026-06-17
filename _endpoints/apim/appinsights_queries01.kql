@@ -127,3 +127,329 @@ items
 | extend tree = strcat(strrep("|   ", toint(depth)), entityName)
 | project timestamp, depth, tree, parentName, itemKind, durationMs, cloud_RoleName, id, parentId
 | order by timestamp asc
+
+
+// ----------------------------------
+
+
+// 5a. DISCOVERY — inspect the raw GenAI attributes (the "Messages" / "Generative AI
+// Properties" panel on the right is just customDimensions of the LLM call).
+// Run this first to see the exact key names used by your instrumentation
+// (they differ across versions: gen_ai.prompt/completion vs gen_ai.input.messages/
+// gen_ai.output.messages, or messages emitted as span events in the traces table).
+
+let opId = "41edd7c7365ff18492cd140954b722a5";
+union dependencies, traces, customEvents
+| where operation_Id == opId
+| where customDimensions has "gen_ai" or name == "chat" or message has "gen_ai"
+| project timestamp, itemType, name, message, customDimensions
+| order by timestamp asc
+
+
+// ----------------------------------
+
+
+// 5b. GenAI metadata + token usage per LLM call (the "Generative AI Properties" +
+// "Custom Properties" section: model, provider, response id, input/output tokens).
+
+let opId = "41edd7c7365ff18492cd140954b722a5";
+dependencies
+| where operation_Id == opId
+| where isnotempty(tostring(customDimensions["gen_ai.operation.name"])) or name == "chat"
+| project
+    timestamp,
+    operation        = tostring(customDimensions["gen_ai.operation.name"]),
+    model            = tostring(customDimensions["gen_ai.request.model"]),
+    provider         = tostring(customDimensions["gen_ai.provider.name"]),
+    responseId       = tostring(customDimensions["gen_ai.response.id"]),
+    inputTokens      = tolong(customDimensions["gen_ai.usage.input_tokens"]),
+    outputTokens     = tolong(customDimensions["gen_ai.usage.output_tokens"]),
+    durationMs       = duration,
+    id, operation_ParentId
+| order by timestamp asc
+
+
+// ----------------------------------
+
+
+// 5c. MESSAGES — input/output of the LLM (System / User / Generated output).
+// coalesce() covers the common conventions; adjust the keys to match what 5a shows.
+
+let opId = "41edd7c7365ff18492cd140954b722a5";
+union dependencies, traces, customEvents
+| where operation_Id == opId
+| extend cd = todynamic(customDimensions)
+| where cd has "gen_ai"
+| extend
+    model         = tostring(cd["gen_ai.request.model"]),
+    systemInstr   = tostring(coalesce(cd["gen_ai.system_instructions"], cd["gen_ai.system.message"])),
+    inputMessages = tostring(coalesce(cd["gen_ai.input.messages"], cd["gen_ai.prompt"], cd["gen_ai.user.message"])),
+    output        = tostring(coalesce(cd["gen_ai.output.messages"], cd["gen_ai.completion"], cd["gen_ai.choice"]))
+| project timestamp, itemType, name, model, systemInstr, inputMessages, output
+| order by timestamp asc
+
+
+// ----------------------------------
+
+
+// 5d. MESSAGES exploded — one readable row per message part.
+// gen_ai.input/output.messages = [{ "role", "parts": [{ "type":"text","content" }
+//                                  | { "type":"tool_call","id","name","arguments" }] }]
+// Double mv-expand (messages -> parts) flattens both input and output into rows.
+
+let opId = "41edd7c7365ff18492cd140954b722a5";
+dependencies
+| where operation_Id == opId
+| where isnotempty(tostring(customDimensions["gen_ai.input.messages"]))
+     or isnotempty(tostring(customDimensions["gen_ai.output.messages"]))
+| project timestamp, callId = id,
+          model      = tostring(customDimensions["gen_ai.request.model"]),
+          inputMsgs  = parse_json(tostring(customDimensions["gen_ai.input.messages"])),
+          outputMsgs = parse_json(tostring(customDimensions["gen_ai.output.messages"]))
+| mv-expand direction = pack_array("input", "output") to typeof(string)
+| extend msgs = iff(direction == "input", inputMsgs, outputMsgs)
+| mv-expand msg = msgs
+| mv-expand part = msg.parts
+| project timestamp, callId, model, direction,
+          role     = tostring(msg.role),
+          partType = tostring(part.type),
+          content  = tostring(part.content),
+          toolName = tostring(part.name),
+          toolArgs = tostring(part.arguments)
+| order by timestamp asc, direction asc
+
+
+// ----------------------------------
+
+
+// 6a. CORRELATION CHECK — does APIM share the same operation_Id (W3C trace) as Foundry?
+// APIM and Foundry land in the SAME App Insights but are the SAME interaction only if
+// the traceparent propagates from APIM into the agent runtime. If 'foundryRole' is
+// populated, the two sides share operation_Id and can be joined directly (see 6b).
+// If it stays empty, the agent started a new trace -> see the note at the bottom.
+
+let apimRole = "mmapim";   // <-- set your APIM service name (its cloud_RoleName prefix)
+requests
+| where timestamp > ago(1h)
+| where cloud_RoleName startswith apimRole
+| project apimTime = timestamp, operation_Id, apimApi = name, url, resultCode
+| join kind=leftouter (
+    union dependencies, traces, requests
+    | where customDimensions has "gen_ai"
+    | distinct operation_Id, foundryRole = cloud_RoleName
+  ) on operation_Id
+| project apimTime, operation_Id, apimApi, url, resultCode, foundryRole
+| order by apimTime desc
+
+
+// ----------------------------------
+
+
+// 6b. SINGLE INTERACTION across APIM + Foundry, tagged by source.
+// One unified, source-labelled view for a given operation_Id: APIM requests/dependencies
+// + the OpenAIUsage token metric (customMetrics) + all Foundry spans/traces.
+
+let opId = "41edd7c7365ff18492cd140954b722a5";
+let apimRole = "mmapim";   // <-- same APIM service name prefix as above
+union requests, dependencies, traces, customMetrics
+| where operation_Id == opId
+| extend source = iff(cloud_RoleName startswith apimRole, "APIM", "Foundry")
+| extend entity = coalesce(tostring(name), tostring(message))
+| project timestamp,
+          source,
+          itemType,
+          entity,
+          durationMs  = column_ifexists("duration", real(null)),
+          resultCode  = tostring(column_ifexists("resultCode", "")),
+          metricValue = column_ifexists("value", real(null)),   // token counts for OpenAIUsage rows
+          details     = customDimensions,                       // APIM metric dimensions / Foundry gen_ai.*
+          cloud_RoleName
+| order by timestamp asc
+
+
+// ----------------------------------
+
+
+// 6a-bis. DISCOVERY for correlation — confirm the thread id is present on BOTH sides.
+// (APIM and Foundry do NOT share operation_Id when traceparent isn't propagated,
+//  so we bridge them on the agent thread id, which both naturally carry.)
+// Inspect where the thread id appears, then tune the regex/keys used in 6c.
+
+let apimRole = "mmapim";
+union requests, dependencies
+| where timestamp > ago(24h)
+| where url has "threads" or name has "threads" or data has "threads"
+     or customDimensions has "thread"
+| extend side = iff(cloud_RoleName startswith apimRole, "APIM", "Foundry")
+| project timestamp, side, itemType, name,
+          url = column_ifexists("url", ""), data = column_ifexists("data", ""),
+          customDimensions, cloud_RoleName
+| order by timestamp desc
+
+
+// ----------------------------------
+
+
+// 6a-ter. APIM side only — does the REAL thread id ever reach APIM telemetry?
+// In 6a-bis the APIM rows showed the templated url "/threads/*" (and were GET noise).
+// This isolates real agent calls (POST runs) and dumps the full url + every dimension,
+// so you can see whether a concrete "thread_XXX" value exists anywhere on the APIM side.
+// If it does NOT  -> APIM logs only the url template; capture it via policy (see note).
+
+let apimRole = "mmapim";
+requests
+| where timestamp > ago(24h)
+| where cloud_RoleName startswith apimRole
+| where url has "threads" or url has "runs" or name has "runs"
+| extend method = tostring(customDimensions["HTTP Method"])
+| project timestamp, method, name, url, resultCode,
+          urlHasConcreteThread = url matches regex @"thread_[A-Za-z0-9]+",
+          customDimensions
+| order by timestamp desc
+
+
+// ----------------------------------
+
+
+// 6c. CORRELATE APIM <-> Foundry on the agent thread id (no trace propagation needed).
+// Bridges the two separate traces: one APIM call <-> all Foundry spans for that thread.
+// After this, drill into each side with apimOpId / foundryOpId using queries #2, #5x, #6b.
+
+let apimRole = "mmapim";
+let lookback = 24h;
+let apimSide =
+    requests
+    | where timestamp > ago(lookback)
+    | where cloud_RoleName startswith apimRole
+    | extend threadId = extract(@"threads/([^/?]+)", 1, url)
+    | where isnotempty(threadId)
+    | project apimTime = timestamp, threadId, apimApi = name, apimUrl = url,
+              apimResult = resultCode, apimDurationMs = duration, apimOpId = operation_Id;
+let foundrySide =
+    union dependencies, requests
+    | where timestamp > ago(lookback)
+    | where cloud_RoleName !startswith apimRole
+    | extend threadId = coalesce(
+            tostring(customDimensions["gen_ai.thread.id"]),
+            tostring(customDimensions["gen_ai.conversation.id"]),
+            extract(@"threads/([^/?]+)", 1, tostring(column_ifexists("url", ""))),
+            extract(@"threads/([^/?]+)", 1, tostring(column_ifexists("data", ""))),
+            extract(@"threads/([^/?]+)", 1, name))
+    | where isnotempty(threadId)
+    | summarize foundryOpId   = take_any(operation_Id),
+                foundryRoles  = make_set(cloud_RoleName),
+                foundryStart  = min(timestamp),
+                foundryEnd    = max(timestamp),
+                foundrySpans  = count()
+      by threadId;
+apimSide
+| join kind=inner foundrySide on threadId
+| project apimTime, threadId,
+          apimApi, apimResult, apimDurationMs, apimOpId,
+          foundryOpId, foundryRoles, foundryStart, foundryEnd, foundrySpans
+| order by apimTime desc
+
+
+// ----------------------------------
+
+
+// 7. SIMPLE per-call report: Foundry LLM input/output + APIM client IP.
+// The ONLY prerequisite is one extra dimension on the token-metric policy:
+//   <dimension name="Thread ID" value="@(...thread id from request path...)" />
+// so the OpenAIUsage metric carries both Client IP and the thread id used to join.
+
+let lookback = 24h;
+// (a) thread id per Foundry operation (from any span carrying /threads/{id})
+let foundryThread =
+    union dependencies, requests
+    | where timestamp > ago(lookback)
+    | extend threadId = coalesce(
+        tostring(customDimensions["gen_ai.thread.id"]),
+        extract(@"threads/([^/?]+)", 1, tostring(column_ifexists("data", ""))),
+        extract(@"threads/([^/?]+)", 1, tostring(column_ifexists("url", ""))),
+        extract(@"threads/([^/?]+)", 1, name))
+    | where isnotempty(threadId)
+    | summarize threadId = take_any(threadId) by operation_Id;
+// (b) LLM input/output per Foundry operation
+let foundryMsgs =
+    dependencies
+    | where timestamp > ago(lookback)
+    | where isnotempty(tostring(customDimensions["gen_ai.input.messages"]))
+    | project opTime  = timestamp, operation_Id,
+              model   = tostring(customDimensions["gen_ai.request.model"]),
+              input   = tostring(customDimensions["gen_ai.input.messages"]),
+              output  = tostring(customDimensions["gen_ai.output.messages"]);
+// (c) client IP per thread, from the APIM OpenAIUsage metric (needs the Thread ID dimension)
+let apimIp =
+    customMetrics
+    | where timestamp > ago(lookback)
+    | where customDimensions has "Client IP"
+    | extend threadId = tostring(customDimensions["Thread ID"]),
+             clientIp = tostring(customDimensions["Client IP"])
+    | where isnotempty(threadId)
+    | summarize clientIp = take_any(clientIp) by threadId;
+foundryMsgs
+| join kind=leftouter foundryThread on operation_Id
+| join kind=leftouter apimIp on threadId
+| project opTime, threadId, clientIp, model, input, output
+| order by opTime desc
+
+
+// ----------------------------------
+
+
+// 7-check. Is the OpenAIUsage token metric even emitted (with Client IP)?
+// If this returns 0 rows, azure-openai-emit-token-metric never fires for agent RUN
+// calls (no synchronous OpenAI 'usage' to parse) -> emit Client IP via <trace> instead.
+
+customMetrics
+| where timestamp > ago(24h)
+| where customDimensions has "Client IP"
+| project timestamp, name, value, customDimensions
+| take 50
+
+
+// ----------------------------------
+
+
+// 7-trace. SAME as #7 but the client IP comes from an APIM <trace> (always emitted),
+// not from the token metric. Add this to <inbound>:
+//   <set-variable name="threadId" value="@(Regex.Match(context.Request.Url.Path,"thread_[A-Za-z0-9]+").Value)" />
+//   <trace source="apim-client" severity="information">
+//     <metadata name="ClientIP" value="@(context.Request.IpAddress)" />
+//     <metadata name="ThreadID" value="@((string)context.Variables.GetValueOrDefault("threadId",""))" />
+//   </trace>
+
+let lookback = 24h;
+let foundryThread =
+    union dependencies, requests
+    | where timestamp > ago(lookback)
+    | extend threadId = coalesce(
+        tostring(customDimensions["gen_ai.thread.id"]),
+        extract(@"threads/([^/?]+)", 1, tostring(column_ifexists("data", ""))),
+        extract(@"threads/([^/?]+)", 1, tostring(column_ifexists("url", ""))),
+        extract(@"threads/([^/?]+)", 1, name))
+    | where isnotempty(threadId)
+    | summarize threadId = take_any(threadId) by operation_Id;
+let foundryMsgs =
+    dependencies
+    | where timestamp > ago(lookback)
+    | where isnotempty(tostring(customDimensions["gen_ai.input.messages"]))
+    | project opTime  = timestamp, operation_Id,
+              model   = tostring(customDimensions["gen_ai.request.model"]),
+              input   = tostring(customDimensions["gen_ai.input.messages"]),
+              output  = tostring(customDimensions["gen_ai.output.messages"]);
+// client IP per thread, from the APIM <trace> (traces table) instead of customMetrics.
+let apimIp =
+    traces
+    | where timestamp > ago(lookback)
+    | where customDimensions has "ThreadID" or customDimensions has "ClientIP"
+    | extend threadId = tostring(customDimensions["ThreadID"]),
+             clientIp = tostring(customDimensions["ClientIP"])
+    | where isnotempty(threadId)
+    | summarize clientIp = take_any(clientIp) by threadId;
+foundryMsgs
+| join kind=leftouter foundryThread on operation_Id
+| join kind=leftouter apimIp on threadId
+| project opTime, threadId, clientIp, model, input, output
+| order by opTime desc
