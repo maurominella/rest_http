@@ -1,0 +1,129 @@
+// App Insights - Requests in the last hour, filtering out Foundry (cloud_RoleName starts with "mmapim")
+// 1. Find the transaction (== operation_Id)
+// First, identify the transaction of interest (e.g., the agent invocation):
+
+requests
+| where timestamp > ago(1h)
+| where name == "invoke_agent" or cloud_RoleName !startswith "mmapim" // include / exclude APIM
+| project timestamp, name, cloud_RoleName, duration, success, operation_Id
+| order by timestamp desc
+
+
+// ----------------------------------
+
+
+// App Insights - Requests, Dependencies, Traces, Custom Events, Exceptions for a specific operation_Id
+// 2. End-to-end view (equivalent to Search)
+let opId = "41edd7c7365ff18492cd140954b722a5";
+union
+  (requests     | extend itemKind="① request",    entityName=name,    entityDuration=duration),
+  (dependencies | extend itemKind="→ dependency",  entityName=name,    entityDuration=duration),
+  (traces       | extend itemKind="≣ trace",       entityName=message, entityDuration=real(null)),
+  (customEvents | extend itemKind="◆ event",       entityName=name,    entityDuration=real(null)),
+  (exceptions   | extend itemKind="✖ exception",   entityName=type,    entityDuration=real(null))
+| where operation_Id == opId
+| project
+    timestamp,
+    itemKind,
+    name = entityName,
+    durationMs = entityDuration,
+    resultCode = column_ifexists("resultCode", ""),
+    success    = column_ifexists("success", dynamic(null)),
+    cloud_RoleName,
+    id,
+    operation_ParentId
+| order by timestamp asc
+
+
+// ----------------------------------
+
+
+// App Insights - Graph of Requests, Dependencies, Traces, Custom Events, Exceptions for a specific operation_Id
+// 3. Render it "as a tree" (hierarchical indentation)
+// The tree uses the operation_ParentId → id relationship. KQL does not support arbitrary recursion, but with make-graph (graph operator) you can calculate the depth and obtain the indentation as in Search:
+
+let opId = "506aa9189fb80941b59959c3abf9a434";
+let items =
+    union
+      (requests     | extend itemKind="request",    entityName=name),
+      (dependencies | extend itemKind="dependency",  entityName=name),
+      (traces       | extend itemKind="trace",       entityName=message),
+      (customEvents | extend itemKind="event",       entityName=name),
+      (exceptions   | extend itemKind="exception",   entityName=type)
+    | where operation_Id == opId
+    | project id, parentId = operation_ParentId, itemKind, entityName,
+              durationMs = column_ifexists("duration", real(null)),
+              timestamp, cloud_RoleName;
+// Walk up the parent chain with leftouter self-joins to compute the nesting depth,
+// then build an indented "tree" column. Add more h*/hp* hops for deeper traces.
+let p = items | project pid = id, pparent = parentId;
+items
+| join kind=leftouter (p | project h1 = pid, hp1 = pparent) on $left.parentId == $right.h1
+| join kind=leftouter (p | project h2 = pid, hp2 = pparent) on $left.hp1 == $right.h2
+| join kind=leftouter (p | project h3 = pid, hp3 = pparent) on $left.hp2 == $right.h3
+| join kind=leftouter (p | project h4 = pid, hp4 = pparent) on $left.hp3 == $right.h4
+| join kind=leftouter (p | project h5 = pid, hp5 = pparent) on $left.hp4 == $right.h5
+| join kind=leftouter (p | project h6 = pid, hp6 = pparent) on $left.hp5 == $right.h6
+| extend depth = tolong(isnotempty(parentId)) + tolong(isnotempty(hp1)) + tolong(isnotempty(hp2))
+               + tolong(isnotempty(hp3)) + tolong(isnotempty(hp4)) + tolong(isnotempty(hp5))
+               + tolong(isnotempty(hp6))
+| extend tree = strcat(strrep("|   ", toint(depth)), entityName)
+| project timestamp, depth, tree, itemKind, durationMs, cloud_RoleName, id, parentId
+| order by timestamp asc
+
+
+// ----------------------------------
+
+
+// 4. Aggregated report by transaction (often more useful than Search)
+// If you need a dashboard instead of a single transaction:
+
+dependencies
+| where timestamp > ago(24h)
+| where cloud_RoleName !startswith "mmapim" // include / exclude APIM
+| summarize
+    calls = count(),
+    avgDurationMs = avg(duration),
+    p95Ms = percentile(duration, 95),
+    errors = countif(success == false)
+  by operationName = name
+| order by avgDurationMs desc
+
+
+// ----------------------------------
+
+
+// 3b. End-to-end view with parentName (each row shows its parent node)
+// Same depth/indentation as #3, plus the name of the immediate parent — handy
+// when timestamps are too close together to read the hierarchy by order alone.
+
+let opId = "506aa9189fb80941b59959c3abf9a434";
+let items =
+    union
+      (requests     | extend itemKind="request",    entityName=name),
+      (dependencies | extend itemKind="dependency",  entityName=name),
+      (traces       | extend itemKind="trace",       entityName=message),
+      (customEvents | extend itemKind="event",       entityName=name),
+      (exceptions   | extend itemKind="exception",   entityName=type)
+    | where operation_Id == opId
+    | project id, parentId = operation_ParentId, itemKind, entityName,
+              durationMs = column_ifexists("duration", real(null)),
+              timestamp, cloud_RoleName;
+// Lookup table: id -> (parentId, name) used both for depth and for parentName.
+let p = items | project pid = id, pparent = parentId, pname = entityName;
+items
+// Resolve the immediate parent's name.
+| join kind=leftouter (p | project pid, parentName = pname) on $left.parentId == $right.pid
+// Walk up the chain to compute the nesting depth (add hops for deeper traces).
+| join kind=leftouter (p | project h1 = pid, hp1 = pparent) on $left.parentId == $right.h1
+| join kind=leftouter (p | project h2 = pid, hp2 = pparent) on $left.hp1 == $right.h2
+| join kind=leftouter (p | project h3 = pid, hp3 = pparent) on $left.hp2 == $right.h3
+| join kind=leftouter (p | project h4 = pid, hp4 = pparent) on $left.hp3 == $right.h4
+| join kind=leftouter (p | project h5 = pid, hp5 = pparent) on $left.hp4 == $right.h5
+| join kind=leftouter (p | project h6 = pid, hp6 = pparent) on $left.hp5 == $right.h6
+| extend depth = tolong(isnotempty(parentId)) + tolong(isnotempty(hp1)) + tolong(isnotempty(hp2))
+               + tolong(isnotempty(hp3)) + tolong(isnotempty(hp4)) + tolong(isnotempty(hp5))
+               + tolong(isnotempty(hp6))
+| extend tree = strcat(strrep("|   ", toint(depth)), entityName)
+| project timestamp, depth, tree, parentName, itemKind, durationMs, cloud_RoleName, id, parentId
+| order by timestamp asc

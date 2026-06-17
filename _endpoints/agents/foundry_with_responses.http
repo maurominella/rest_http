@@ -13,31 +13,16 @@
 # - OpenAI fallback: {{azure_openai_fallback_endpoint}}
 # - APIM:            {{apim_service_gatewayurl}}/{{apim_api_name}}/, BUT App Registration in Entra ID is needed
 
-@azure_openai_endpoint = {{azure_openai_main_endpoint}}
 @agent_name = ha02-azureopenaiagent
-@agent_version = 3
+
+# agent_version not used here - alwasy the latest version of the agent is used for Foundry Agents
+@agent_version = 3 
 
 @query = Can you help me find available hotels in Seattle for a stay from April 25th to April 28th with a budget of $200 per night?
 
-###
-# Invoking OpenAI - CHAT COMPLETIONS
-POST {{azure_openai_endpoint}}openai/deployments/{{azure_openai_deployment_name}}/chat/completions?api-version={{azure_openai_api_version}}
-Authorization: Bearer {{bearertoken_for_aiazurecom}}
-Content-Type: application/json
-
-{
-    "messages": [
-        {
-            "role": "user",
-            "content": "Can you help me find available hotels in Seattle for a stay from April 25th to April 28th with a budget of $200 per night?"
-        }
-    ]
-}
-
-
 
 ###
-# Invoking OpenAI - RESPONSES
+# Invoking Foundry Agent within a Foundry Project with RESPONSES APIs
 # https://<account>.services.ai.azure.com/api/projects/<project>/agents/<agentName>/endpoint/protocols/openai/responses
 POST {{foundry_project_endpoint}}/agents/{{agent_name}}/endpoint/protocols/openai/responses?api-version={{azure_openai_responses_api_version}}
 Authorization: Bearer {{bearertoken_for_aiazurecom}}

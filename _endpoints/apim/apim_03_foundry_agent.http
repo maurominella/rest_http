@@ -40,7 +40,7 @@
 
 # APIM product that the subscription key above belongs to (the new API must be
 # linked to this product, otherwise APIM returns 401 on the gateway call)
-@apim_foundry_product_id = unlimited
+@apim_foundry_product_id = Unlimited
 
 @query = Can you help me find available hotels in Seattle for a stay from April 25th to April 28th with a budget of $200 per night?
 

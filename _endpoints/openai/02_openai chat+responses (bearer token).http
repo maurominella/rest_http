@@ -1,0 +1,43 @@
+# https://learn.microsoft.com/en-us/azure/ai-services/agents/quickstart?pivots=rest-api
+# az login --use-device-code --tenant <your-tenant-id-or-domain>
+# az config set extension.dynamic_install_allow_preview=true
+# az account tenant list --output table
+# for Azure Management tasks --> az account get-access-token --resource https://management.core.windows.net/
+# for OpenAI tasks --> az account get-access-token --resource https://cognitiveservices.azure.com/
+# for Microsoft Graph tasks --> az account get-access-token --resource https://graph.microsoft.com/
+# for Foundry Applications --> az account get-access-token --resource https://ai.azure.com/
+# for Azure Search tasks --> az account get-access-token --resource https://search.azure.com/
+# for Machine Learning tasks --> az account get-access-token --resource https://ml.azure.com/ 
+
+# OpenAI Endpoints:
+# - OpenAI main:     {{azure_openai_main_endpoint}}
+# - OpenAI fallback: {{azure_openai_fallback_endpoint}}
+# - APIM:            {{apim_service_gatewayurl}}/{{apim_api_name}}/, BUT App Registration in Entra ID is needed
+
+@query = What is a meaning function? Reply in less than 10 words.
+
+###
+# Invoking OpenAI - CHAT COMPLETIONS
+POST {{azure_openai_main_endpoint}}openai/deployments/{{azure_openai_deployment_name}}/chat/completions?api-version={{azure_openai_api_version}}
+Authorization: Bearer {{bearertoken_for_aiazurecom}}
+Content-Type: application/json
+
+{
+    "messages": [
+        {
+            "role": "user",
+            "content": "{{query}}"
+        }
+    ]
+}
+
+###
+# Invoking OpenAI - OPENAI RESPONSES
+POST {{azure_openai_main_endpoint}}openai/v1/responses
+Authorization: Bearer {{bearertoken_for_aiazurecom}}
+Content-Type: application/json
+
+{
+    "model": "{{azure_openai_deployment_name}}",
+    "input": "{{query}}"
+}
