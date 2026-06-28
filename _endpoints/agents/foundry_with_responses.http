@@ -34,7 +34,7 @@ Content-Type: application/json
 
 
 ###
-# Invoking Foundry Agent within a Foundry Project with RESPONSES APIs
+# Invoking Foundry Agent within a Foundry Project with RESPONSES APIs with assertion in extra metadata
 # https://<account>.services.ai.azure.com/api/projects/<project>/agents/<agentName>/endpoint/protocols/openai/responses
 POST http://localhost:8088/responses?api-version={{azure_openai_responses_api_version}}
 Authorization: Bearer {{bearertoken_for_azuremanagement}}
