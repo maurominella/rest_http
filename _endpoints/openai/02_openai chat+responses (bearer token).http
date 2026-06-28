@@ -16,6 +16,9 @@
 
 @query = What is a meaning function? Reply in less than 10 words.
 
+@agent_name = ha01-echoagent
+@agent_version = "4"
+
 ###
 # Invoking OpenAI - CHAT COMPLETIONS
 POST {{azure_openai_main_endpoint}}openai/deployments/{{azure_openai_deployment_name}}/chat/completions?api-version={{azure_openai_api_version}}
@@ -39,5 +42,17 @@ Content-Type: application/json
 
 {
     "model": "{{azure_openai_deployment_name}}",
+    "input": "{{query}}"
+}
+
+
+###
+# Invoking Foundry Agent within a Foundry Project with RESPONSES APIs
+# https://<account>.services.ai.azure.com/api/projects/<project>/agents/<agentName>/endpoint/protocols/openai/responses
+POST {{foundry_project_endpoint}}/agents/{{agent_name}}/endpoint/protocols/openai/responses?api-version={{azure_openai_responses_api_version}}
+Authorization: Bearer {{bearertoken_for_aiazurecom}}
+Content-Type: application/json
+
+{
     "input": "{{query}}"
 }
