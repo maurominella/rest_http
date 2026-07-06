@@ -12,8 +12,9 @@
 # - OpenAI main:     {{azure_openai_main_endpoint}}
 # - OpenAI fallback: {{azure_openai_fallback_endpoint}}
 # - APIM:            {{apim_service_gatewayurl}}/{{apim_api_name}}/, BUT App Registration in Entra ID is needed
-# ha01-echoagent or ha02-azureopenaiagent
-@agent_name = ha01-echoagent
+# ha01-echoagent or ha02-azureopenaiagent ha02-agentserverresponses-llmagent
+
+@agent_name = ha02-agentserverresponses-llmagent
 
 # agent_version not used here - always the latest version of the agent is used for Foundry Agents
 @agent_version = 3 
@@ -26,6 +27,7 @@
 # https://<account>.services.ai.azure.com/api/projects/<project>/agents/<agentName>/endpoint/protocols/openai/responses
 POST {{foundry_project_endpoint}}/agents/{{agent_name}}/endpoint/protocols/openai/responses?api-version={{azure_openai_responses_api_version}}
 Authorization: Bearer {{bearertoken_for_aiazurecom}}
+x-client-user-token: "aaa"
 Content-Type: application/json
 
 {
