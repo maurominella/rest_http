@@ -1,0 +1,6 @@
+{
+    "bearertoken_for_aiazurecom": "https://ai.azure.com/",
+    "bearertoken_for_cognitiveservices": "https://cognitiveservices.azure.com/",
+    "bearertoken_for_azuremanagement": "https://management.core.windows.net/",
+    "bearertoken_for_azureml": "https://ml.azure.com/"
+}
