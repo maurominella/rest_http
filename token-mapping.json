@@ -22,6 +22,13 @@
     },
     {
         "generate_token": "n",
+        "token_name": "bearertoken_for_search",
+        "token_resource": "https://search.azure.com/",
+        "token_value": "",
+        "app_id": ""
+    },
+    {
+        "generate_token": "n",
         "token_name": "bearertoken_for_azureml",
         "token_resource": "https://ml.azure.com/",
         "token_value": "",
