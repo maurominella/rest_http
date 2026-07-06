@@ -27,7 +27,7 @@
 # https://<account>.services.ai.azure.com/api/projects/<project>/agents/<agentName>/endpoint/protocols/openai/responses
 POST {{foundry_project_endpoint}}/agents/{{agent_name}}/endpoint/protocols/openai/responses?api-version={{azure_openai_responses_api_version}}
 Authorization: Bearer {{bearertoken_for_aiazurecom}}
-x-client-user-token: "aaa"
+x-client-user-token: {{bearertoken_for_obo}}
 Content-Type: application/json
 
 {

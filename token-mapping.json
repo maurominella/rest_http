@@ -1,6 +1,37 @@
-{
-    "bearertoken_for_aiazurecom": "https://ai.azure.com/",
-    "bearertoken_for_cognitiveservices": "https://cognitiveservices.azure.com/",
-    "bearertoken_for_azuremanagement": "https://management.core.windows.net/",
-    "bearertoken_for_azureml": "https://ml.azure.com/"
-}
+[
+    {
+        "generate_token": "y",
+        "token_name": "bearertoken_for_aiazurecom",
+        "token_resource": "https://ai.azure.com/",
+        "token_value": "",
+        "app_id": ""
+    },
+    {
+        "generate_token": "n",
+        "token_name": "bearertoken_for_cognitiveservices",
+        "token_resource": "https://cognitiveservices.azure.com/",
+        "token_value": "",
+        "app_id": ""
+    },
+    {
+        "generate_token": "n",
+        "token_name": "bearertoken_for_azuremanagement",
+        "token_resource": "https://management.core.windows.net/",
+        "token_value": "",
+        "app_id": ""
+    },
+    {
+        "generate_token": "n",
+        "token_name": "bearertoken_for_azureml",
+        "token_resource": "https://ml.azure.com/",
+        "token_value": "",
+        "app_id": ""
+    },
+    {
+        "generate_token": "y",
+        "token_name": "bearertoken_for_obo",
+        "token_resource": "https://ai.azure.com/",
+        "token_value": "",
+        "app_id": "3a0fad96-b026-4f5f-914a-fc6348656f6b"
+    }
+]
