@@ -1,10 +1,17 @@
 [
     {
         "generate_token": "y",
-        "token_name": "bearertoken_for_aiazurecom",
+        "token_name": "bearertoken_user-token_for_foundry",
         "token_resource": "https://ai.azure.com/",
         "token_value": "",
         "app_id": ""
+    },
+    {
+        "generate_token": "y",
+        "token_name": "bearertoken_app-token_for_foundry",
+        "token_resource": "https://ai.azure.com/",
+        "token_value": "",
+        "app_id": "b0cc68f2-87d7-491d-8cc2-60624256126e"
     },
     {
         "generate_token": "n",
@@ -37,8 +44,8 @@
     {
         "generate_token": "y",
         "token_name": "bearertoken_for_obo",
-        "token_resource": "https://ai.azure.com/",
+        "token_resource": "api://app-obo/3a0fad96-b026-4f5f-914a-fc6348656f6b",
         "token_value": "",
-        "app_id": "3a0fad96-b026-4f5f-914a-fc6348656f6b"
+        "app_id": ""
     }
 ]

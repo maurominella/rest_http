@@ -3,10 +3,16 @@
 # az config set extension.dynamic_install_allow_preview=true
 # az account tenant list --output table
 # for Azure Management tasks --> az account get-access-token --resource https://management.core.windows.net/
-# for Foundry Applications (aiazurecom) --> az account get-access-token --resource https://ai.azure.com/
 # for OpenAI tasks --> az account get-access-token --resource https://cognitiveservices.azure.com/
+# for Foundry Applications --> az account get-access-token --resource https://ai.azure.com/
 # for Azure Search tasks --> az account get-access-token --resource https://search.azure.com/
 # for Machine Learning tasks --> az account get-access-token --resource https://ml.azure.com/ 
+
+# OpenAI Endpoints:
+# - OpenAI main:     {{azure_openai_main_endpoint}}
+# - OpenAI fallback: {{azure_openai_fallback_endpoint}}
+# - APIM:            {{apim_service_gatewayurl}}/{{apim_api_name}}/, BUT App Registration in Entra ID is needed
+# ha01-echoagent or ha02-azureopenaiagent ha02-agentserverresponses-llmagent
 
 
 @resource_group = rg-aifoundry7159
