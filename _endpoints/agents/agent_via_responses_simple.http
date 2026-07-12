@@ -9,7 +9,9 @@
 # for Machine Learning tasks --> az account get-access-token --resource https://ml.azure.com/ 
 
 @baseUrl = http://localhost:8088
-@query = Dammi la lista delle cartelle del mio OneDrive, ordinata per dimensione decrescente (in Mb)
+# Dammi la lista delle cartelle del mio OneDrive, ordinata per dimensione decrescente (in Mb).
+# What is a meaning function? Answer in less than 10 words.
+@query = Dammi la lista delle cartelle del mio OneDrive, ordinata per dimensione decrescente (in Mb).
 
 ### plain un-authenticated request
 POST {{baseUrl}}/responses
@@ -20,9 +22,29 @@ Content-Type: application/json
 }
 
 
-### un-authenticated request with OBO token
+### un-authenticated request with OBO token without authorization header
 POST {{baseUrl}}/responses
 Content-Type: application/json
+x-client-user-token: {{bearertoken_for_obo}}
+ 
+{
+    "input": "{{query}}"
+}
+
+### user-authenticated request with OBO token with authorization header
+POST {{baseUrl}}/responses
+Content-Type: application/json
+Authorization: Bearer {{bearertoken_user-token_for_foundry}}
+x-client-user-token: {{bearertoken_for_obo}}
+ 
+{
+    "input": "{{query}}"
+}
+
+### app-authenticated request with OBO token with authorization header
+POST {{baseUrl}}/responses
+Content-Type: application/json
+Authorization: Bearer {{bearertoken_app-token_for_foundry}}
 x-client-user-token: {{bearertoken_for_obo}}
  
 {

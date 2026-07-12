@@ -1,30 +1,13 @@
-# https://learn.microsoft.com/en-us/azure/ai-services/agents/quickstart?pivots=rest-api
-# az login --use-device-code --tenant <your-tenant-id-or-domain>
-# az config set extension.dynamic_install_allow_preview=true
-# az account tenant list --output table
-# for Azure Management tasks --> az account get-access-token --resource https://management.core.windows.net/
-# for OpenAI tasks --> az account get-access-token --resource https://cognitiveservices.azure.com/
-# for Foundry Applications --> az account get-access-token --resource https://ai.azure.com/
-# for Azure Search tasks --> az account get-access-token --resource https://search.azure.com/
-# for Machine Learning tasks --> az account get-access-token --resource https://ml.azure.com/ 
+@agent_name = hello-world-python-responses
 
-# OpenAI Endpoints:
-# - OpenAI main:     {{azure_openai_main_endpoint}}
-# - OpenAI fallback: {{azure_openai_fallback_endpoint}}
-# - APIM:            {{apim_service_gatewayurl}}/{{apim_api_name}}/, BUT App Registration in Entra ID is needed
-# ha01-echoagent or ha02-azureopenaiagent ha02-agentserverresponses-llmagent
-
-@agent_name = ha02-agentserverresponses-llmagent
-
-# agent_version not used here - always the latest version of the agent is used for Foundry Agents
-@agent_version = 3 
-
-@query = Can you help me find available hotels in Seattle for a stay from April 25th to April 28th with a budget of $200 per night?
+# Dammi la lista delle cartelle del mio OneDrive, ordinata per dimensione decrescente (in Mb).
+# What is a meaning function? Answer in less than 10 words.
+@query = Dammi la lista delle cartelle del mio OneDrive, ordinata per dimensione decrescente (in Mb).
 
 
 ###
 # Invoking Foundry Agent within a Foundry Project with RESPONSES APIs
-# https://<account>.services.ai.azure.com/api/projects/<project>/agents/<agentName>/endpoint/protocols/openai/responses
+# https://<account>.services.ai.azure.com/api/projects/<project>/agents/<agentName>/endpoint/protocols/openai/responsehttps://foundry7159.services.ai.azure.com/api/projects/aif7159-standard-agent-project/agents/ha02-agentserverresponses-llmagent/endpoint/protocols/openai/responses
 # we can use either the user token or the app token for Foundry (bearertoken_user-token_for_foundry or bearertoken_app-token_for_foundry).
 POST {{foundry_project_endpoint}}/agents/{{agent_name}}/endpoint/protocols/openai/responses?api-version={{azure_openai_responses_api_version}}
 Authorization: Bearer {{bearertoken_user-token_for_foundry}}
@@ -36,17 +19,12 @@ Content-Type: application/json
 }
 
 
-###
-# Invoking Foundry Agent within a Foundry Project with RESPONSES APIs with assertion in extra metadata
-# https://<account>.services.ai.azure.com/api/projects/<project>/agents/<agentName>/endpoint/protocols/openai/responses
-POST http://localhost:8088/responses?api-version={{azure_openai_responses_api_version}}
-Authorization: Bearer {{bearertoken_for_azuremanagement}}
+### app-authenticated request with OBO token with authorization header
+POST {{foundry_project_endpoint}}/agents/{{agent_name}}/endpoint/protocols/openai/responses?api-version={{azure_openai_responses_api_version}}
 Content-Type: application/json
-
+Authorization: Bearer {{bearertoken_app-token_for_foundry}}
+x-client-user-token: {{bearertoken_for_obo}}
+ 
 {
-    "input": "{{query}}",
-    "metadata": {
-        "ua_n": "1",
-        "ua_0": "{{ua_0}}"
-    }
+    "input": "{{query}}"
 }
