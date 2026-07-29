@@ -28,3 +28,19 @@ x-client-user-token: {{bearertoken_for_obo}}
 {
     "input": "{{query}}"
 }
+
+###
+
+
+az role assignment create --assignee "b0cc68f2-87d7-491d-8cc2-60624256126e" \
+  --role "eed3b665-ab3a-47b6-8f48-c9382fb1dad6" \
+  --scope "/subscriptions/eca2eddb-0f0c-4351-a634-52751499eeea/resourceGroups/rg-aifoundry7159/providers/Microsoft.CognitiveServices/accounts/foundry7159/projects/aif7159-standard-agent-project"
+
+az role assignment create --assignee "b0cc68f2-87d7-491d-8cc2-60624256126e" \
+  --role "eed3b665-ab3a-47b6-8f48-c9382fb1dad6" \
+  --scope "/subscriptions/eca2eddb-0f0c-4351-a634-52751499eeea/resourceGroups/rg-aifoundry7159/providers/Microsoft.CognitiveServices/accounts/foundry7159/projects/aif7159-standard-agent-project/agents/hello-world-python-responsesxxx"
+
+az role assignment delete \
+  --assignee "b0cc68f2-87d7-491d-8cc2-60624256126e" \
+  --role "eed3b665-ab3a-47b6-8f48-c9382fb1dad6" \
+  --scope "/subscriptions/eca2eddb-0f0c-4351-a634-52751499eeea/resourceGroups/rg-aifoundry7159/providers/Microsoft.CognitiveServices/accounts/foundry7159/projects/aif7159-standard-agent-project/agents/hello-world-python-responsesxxx"
