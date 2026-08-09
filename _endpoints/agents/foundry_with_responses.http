@@ -1,14 +1,20 @@
-@agent_name = hello-world-python-responses
+@foundry_project_endpoint = https://mm-ai-upskilling-project-resourc.services.ai.azure.com/api/projects/ai-upskilling-project
+
+# asb-assistant-01 hello-world-python-responses
+@agent_name = asb-assistant-01 
 
 # Dammi la lista delle cartelle del mio OneDrive, ordinata per dimensione decrescente (in Mb).
 # What is a meaning function? Answer in less than 10 words.
-@query = Dammi la lista delle cartelle del mio OneDrive, ordinata per dimensione decrescente (in Mb).
+# What can you do?
+@query = What can you do?
 
 
 ###
 # Invoking Foundry Agent within a Foundry Project with RESPONSES APIs
 # https://<account>.services.ai.azure.com/api/projects/<project>/agents/<agentName>/endpoint/protocols/openai/responsehttps://foundry7159.services.ai.azure.com/api/projects/aif7159-standard-agent-project/agents/ha02-agentserverresponses-llmagent/endpoint/protocols/openai/responses
 # we can use either the user token or the app token for Foundry (bearertoken_user-token_for_foundry or bearertoken_app-token_for_foundry).
+# The key point is that the invoker must have at least the "Foundry Agent Consumer" role assigned to the Foundry Agent or Project:
+# https://learn.microsoft.com/en-us/azure/foundry/concepts/rbac-foundry?tabs=owner%2Cfoundry#built-in-roles
 POST {{foundry_project_endpoint}}/agents/{{agent_name}}/endpoint/protocols/openai/responses?api-version={{azure_openai_responses_api_version}}
 Authorization: Bearer {{bearertoken_user-token_for_foundry}}
 x-client-user-token: {{bearertoken_for_obo}}
