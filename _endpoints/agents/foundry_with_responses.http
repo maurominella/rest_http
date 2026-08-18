@@ -1,12 +1,18 @@
-@foundry_project_endpoint = https://mm-ai-upskilling-project-resourc.services.ai.azure.com/api/projects/ai-upskilling-project
+# https://foundry7159.services.ai.azure.com/api/projects/aif7159-standard-agent-project, https://mm-ai-upskilling-project-resourc.services.ai.azure.com/api/projects/ai-upskilling-project
 
-# asb-assistant-01 hello-world-python-responses
-@agent_name = asb-assistant-01 
+@foundry_project_endpoint = https://foundry7159.services.ai.azure.com/api/projects/aif7159-standard-agent-project
+
+# asb-assistant-01 hello-world-python-responses hello-world-responses02
+@agent_name = hello-world-responses02
 
 # Dammi la lista delle cartelle del mio OneDrive, ordinata per dimensione decrescente (in Mb).
 # What is a meaning function? Answer in less than 10 words.
 # What can you do?
-@query = What can you do?
+@query = Give me the list of my OneDrive folders, sorted by size decreasing (in Mb).
+
+
+# The version of the Foundry Responses API to use. It should be v1 (better and latest) or 2025-11-15-preview
+@version = {{azure_openai_responses_api_version}}
 
 
 ###
@@ -15,7 +21,7 @@
 # we can use either the user token or the app token for Foundry (bearertoken_user-token_for_foundry or bearertoken_app-token_for_foundry).
 # The key point is that the invoker must have at least the "Foundry Agent Consumer" role assigned to the Foundry Agent or Project:
 # https://learn.microsoft.com/en-us/azure/foundry/concepts/rbac-foundry?tabs=owner%2Cfoundry#built-in-roles
-POST {{foundry_project_endpoint}}/agents/{{agent_name}}/endpoint/protocols/openai/responses?api-version={{azure_openai_responses_api_version}}
+POST {{foundry_project_endpoint}}/agents/{{agent_name}}/endpoint/protocols/openai/responses?api-version={{version}}
 Authorization: Bearer {{bearertoken_user-token_for_foundry}}
 x-client-user-token: {{bearertoken_for_obo}}
 Content-Type: application/json
@@ -26,7 +32,7 @@ Content-Type: application/json
 
 
 ### app-authenticated request with OBO token with authorization header
-POST {{foundry_project_endpoint}}/agents/{{agent_name}}/endpoint/protocols/openai/responses?api-version={{azure_openai_responses_api_version}}
+POST {{foundry_project_endpoint}}/agents/{{agent_name}}/endpoint/protocols/openai/responses?api-version={{version}}
 Content-Type: application/json
 Authorization: Bearer {{bearertoken_app-token_for_foundry}}
 x-client-user-token: {{bearertoken_for_obo}}
