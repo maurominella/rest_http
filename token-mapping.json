@@ -47,5 +47,12 @@
         "token_resource": "api://app-obo/3a0fad96-b026-4f5f-914a-fc6348656f6b",
         "token_value": "",
         "app_id": ""
+    },
+    {
+        "generate_token": "y",
+        "token_name": "bearertoken_for_mcp",
+        "token_resource": "api://mcp/1584713c-4129-46b7-b4c2-333df819ef5c",
+        "token_value": "",
+        "app_id": ""
     }
 ]
