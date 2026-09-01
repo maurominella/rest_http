@@ -1,10 +1,14 @@
 # https://learn.microsoft.com/en-us/azure/ai-services/agents/quickstart?pivots=rest-api
 # az login --use-device-code --tenant <your-tenant-id-or-domain>
-# APP_OBJ_ID=$(az ad app show --id 1584713c-4129-46b7-b4c2-333df819ef5c --query "id" -o tsv | tr -d '\r'); echo $APP_OBJ_ID
-# APP_ID_URI=$(az ad app show --id $APP_OBJ_ID --query "identifierUris[0]" -o tsv | tr -d '\r'); echo $APP_ID_URI
-# SCOPE_VALUE=$(az ad app show --id $APP_OBJ_ID --query "api.oauth2PermissionScopes[0].value" -o tsv | tr -d '\r'); echo $SCOPE_VALUE
-# TOKEN=$(az account get-access-token --scope "${APP_ID_URI}/${SCOPE_VALUE}" --query accessToken -o tsv); echo $TOKEN
-
+"""
+az logout
+az login
+APP_ID=1584713c-4129-46b7-b4c2-333df819ef5c; echo $APP_ID
+APP_OBJ_ID=$(az ad app show --id 1584713c-4129-46b7-b4c2-333df819ef5c --query "id" -o tsv | tr -d '\r'); echo $APP_OBJ_ID
+APP_ID_URI=$(az ad app show --id $APP_OBJ_ID --query "identifierUris[0]" -o tsv | tr -d '\r'); echo $APP_ID_URI
+SCOPE_VALUE=$(az ad app show --id $APP_OBJ_ID --query "api.oauth2PermissionScopes[0].value" -o tsv | tr -d '\r'); echo $SCOPE_VALUE
+TOKEN=$(az account get-access-token --scope "${APP_ID_URI}/${SCOPE_VALUE}" --query accessToken -o tsv); echo $TOKEN
+"""
 
 # Just if pre-authorization is needed, run this:
 # Unique APP_ID for AZURE CLI
@@ -22,17 +26,13 @@
 #     }
 #   }"
 
-# either http://localhost:8000 or  http://localhost:8010 or https://mcp-onedrive-demo01.delightfulpebble-c37a75cf.swedencentral.azurecontainerapps.io
-@baseUrl = https://mcp-onedrive-demo01.delightfulpebble-c37a75cf.swedencentral.azurecontainerapps.io
+# either http://localhost:8000 or  http://localhost:8010 or https://mcp-onedrive-demo01.niceflower-8b4a0311.swedencentral.azurecontainerapps.io
+@mcpBaseUrl = https://mcp-onedrive-demo01.niceflower-8b4a0311.swedencentral.azurecontainerapps.io
 
-@foundry_project_endpoint = https://foundry7159.services.ai.azure.com/api/projects/aif7159-standard-agent-project
-
-@agent_name = custom-mcp-agent-01
-@agent_version = 5
 
 
 ### get the list of tools - UN-AUTHENTICATED or FAKE-AUTEHTNCIATION, just to see the metadata of the tools
-POST {{baseUrl}}/mcp
+POST {{mcpBaseUrl}}/mcp
 Content-Type: application/json
 Accept: application/json, text/event-stream
 Authorization: Bearer {{bearertoken_for_mcp}}
@@ -46,7 +46,7 @@ Authorization: Bearer {{bearertoken_for_mcp}}
 
 
 ### runs WhoAmI tool to verify the authentication and get the user info
-POST {{baseUrl}}/mcp
+POST {{mcpBaseUrl}}/mcp
 Content-Type: application/json
 Accept: application/json, text/event-stream
 Authorization: Bearer {{bearertoken_for_mcp}}
@@ -60,7 +60,7 @@ Authorization: Bearer {{bearertoken_for_mcp}}
 
 
 ### runs create_ticket tool to verify the authentication and get the user info
-POST {{baseUrl}}/mcp
+POST {{mcpBaseUrl}}/mcp
 Content-Type: application/json
 Accept: application/json, text/event-stream
 Authorization: Bearer {{bearertoken_for_mcp}}
@@ -74,7 +74,7 @@ Authorization: Bearer {{bearertoken_for_mcp}}
 
 
 ### invoke an MCP tool (e.g. get_onedrive_root_folders)
-POST {{baseUrl}}/mcp
+POST {{mcpBaseUrl}}/mcp
 Content-Type: application/json
 Accept: application/json, text/event-stream
 Authorization: Bearer {{bearertoken_for_mcp}}
@@ -90,13 +90,3 @@ Authorization: Bearer {{bearertoken_for_mcp}}
 GET https://graph.microsoft.com/v1.0/me/drive/root/children
 Content-Type: application/json
 Authorization: Bearer {{bearertoken_for_msgraph}}
-
-### invoke the agent
-POST {{foundry_project_endpoint}}/responses?api-version=2024-10-01-preview
-Content-Type: application/json
-Authorization: Bearer {{bearertoken_for_aiazurecom}}
-
-{
-  "input": [{"role": "user", "content": "what can you do?"}],
-  "extra_body": {"agent_reference": {"name": "{{agent_name}}", "version": "{{agent_version}}", "type": "agent_reference"}}
-}

@@ -1,0 +1,15 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "bashdb",
+            "request": "launch",
+            "name": "Debug current Bash file",
+            "cwd": "${fileDirname}",
+            "program": "${file}",
+            "terminalKind": "integrated",
+            "showDebugOutput": true,
+            "args": []
+        }
+    ]
+}

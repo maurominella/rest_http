@@ -21,7 +21,7 @@
         "app_id": ""
     },
     {
-        "generate_token": "n",
+        "generate_token": "y",
         "token_name": "bearertoken_for_azuremanagement",
         "token_resource": "https://management.core.windows.net/",
         "token_value": "",

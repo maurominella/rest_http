@@ -1,0 +1,125 @@
+# Reference: Microsoft Foundry REST API quickstart.
+# https://learn.microsoft.com/en-us/azure/ai-services/agents/quickstart?pivots=rest-api
+
+# Signs in to Azure interactively for the specified tenant.
+# az login --use-device-code --tenant <your-tenant-id-or-domain>
+
+# Allows Azure CLI to install preview extensions dynamically.
+# az config set extension.dynamic_install_allow_preview=true
+
+# Lists the tenants available to the signed-in Azure account.
+# az account tenant list --output table
+
+# Gets an access token for Azure Resource Manager operations.
+# az account get-access-token --resource https://management.core.windows.net/
+
+# Gets an access token for Azure OpenAI data-plane operations.
+# az account get-access-token --resource https://cognitiveservices.azure.com/
+
+# Gets an access token for Azure AI Search data-plane operations.
+# az account get-access-token --resource https://search.azure.com/
+
+# Gets an access token for Azure Machine Learning operations.
+# az account get-access-token --resource https://ml.azure.com/
+
+# Variables scoped to this file override variables with the same name in settings.json.
+@resource_group = rg-aifoundry7159
+@foundry_account = foundry7159
+@project_name = aif7159-standard-agent-project
+@capability_hosts_api_version = 2026-05-01
+@capability_host_name = projectCapabilityHost
+@connections_api_version = 2026-05-01
+@old_search_connection_name = mysearch-conn
+@new_search_connection_name = mysearch-conn-v2
+@search_service_name = CHANGE_ME
+@search_resource_id = /subscriptions/{{subscription_id}}/resourceGroups/{{resource_group}}/providers/Microsoft.Search/searchServices/{{search_service_name}}
+@storage_connection_name = mystorage-conn
+@cosmos_connection_name = mycosmos-conn
+
+###
+
+# Lists the capability hosts configured for the specified Microsoft Foundry project.
+# @name listCapabilityHosts
+GET https://management.azure.com/subscriptions/{{subscription_id}}/resourceGroups/{{resource_group}}/providers/Microsoft.CognitiveServices/accounts/{{foundry_account}}/projects/{{project_name}}/capabilityHosts
+    ?api-version={{capability_hosts_api_version}}
+# REST Client automatically acquires and refreshes the token for management.azure.com.
+Authorization: {{$aadToken}}
+Accept: application/json
+
+###
+
+# Deletes the specified Azure AI Search connection from the Microsoft Foundry project.
+# @name deleteSearchConnection
+# @note This operation permanently deletes the project connection. Confirm before sending.
+DELETE https://management.azure.com/subscriptions/{{subscription_id}}/resourceGroups/{{resource_group}}/providers/Microsoft.CognitiveServices/accounts/{{foundry_account}}/projects/{{project_name}}/connections/{{old_search_connection_name}}
+    ?api-version={{connections_api_version}}
+# REST Client automatically acquires and refreshes the token for management.azure.com.
+Authorization: {{$aadToken}}
+Accept: application/json
+
+###
+
+# Creates or replaces an Azure AI Search connection that uses the Foundry account's system-assigned identity.
+# @name createSearchConnection
+PUT https://management.azure.com/subscriptions/{{subscription_id}}/resourceGroups/{{resource_group}}/providers/Microsoft.CognitiveServices/accounts/{{foundry_account}}/projects/{{project_name}}/connections/{{new_search_connection_name}}
+        ?api-version={{connections_api_version}}
+# REST Client automatically acquires and refreshes the token for management.azure.com.
+Authorization: {{$aadToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+    "properties": {
+        "connectionType": "AzureAISearch",
+        "resourceId": "{{search_resource_id}}",
+        "credentials": {
+            "identity": {
+                "type": "SystemAssigned"
+            }
+        }
+    }
+}
+
+###
+
+# Creates or replaces the Agents capability host and binds its vector, file, and thread storage connections.
+# @name createCapabilityHost
+# @note If the capability host already exists, this request replaces its connection configuration. Confirm before sending.
+PUT https://management.azure.com/subscriptions/{{subscription_id}}/resourceGroups/{{resource_group}}/providers/Microsoft.CognitiveServices/accounts/{{foundry_account}}/projects/{{project_name}}/capabilityHosts/{{capability_host_name}}
+    ?api-version={{capability_hosts_api_version}}
+# REST Client automatically acquires and refreshes the token for management.azure.com.
+Authorization: {{$aadToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+    "properties": {
+        "capabilityHostKind": "Agents",
+        "vectorStoreConnections": [
+            {
+                "connectionName": "{{new_search_connection_name}}"
+            }
+        ],
+        "storageConnections": [
+            {
+                "connectionName": "{{storage_connection_name}}"
+            }
+        ],
+        "threadStorageConnections": [
+            {
+                "connectionName": "{{cosmos_connection_name}}"
+            }
+        ]
+    }
+}
+
+###
+
+# Deletes the specified capability host from the Microsoft Foundry project.
+# @name deleteCapabilityHost
+# @note This operation permanently deletes the capability host. Confirm before sending.
+DELETE https://management.azure.com/subscriptions/{{subscription_id}}/resourceGroups/{{resource_group}}/providers/Microsoft.CognitiveServices/accounts/{{foundry_account}}/projects/{{project_name}}/capabilityHosts/{{capability_host_name}}
+    ?api-version={{capability_hosts_api_version}}
+# REST Client automatically acquires and refreshes the token for management.azure.com.
+Authorization: {{$aadToken}}
+Accept: application/json
