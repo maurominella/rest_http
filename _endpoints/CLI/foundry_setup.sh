@@ -6,76 +6,92 @@
 # Authenticate first with: az login --use-device-code
 # When multiple subscriptions are available, this script selects SUBID explicitly.
 
-# Azure resource configuration. These values are not secrets.
+### Azure resource configuration. These values are not secrets.
 
-ID="03"
+ID="aif02"
 
 SUBID="eca2eddb-0f0c-4351-a634-52751499eeea"
 LOCATION="swedencentral"
 
+# Resource Groups
+NETWORKING_RG="${ID}_networking_rg"
+FOUNDRY_RG="${ID}_foundry_rg"
+RESOURCES_RG="${ID}_resources_rg"
+JUMPVM_RG="${ID}_jumpvm_rg"
+DNS_RG="dns-private-rg"
+
+### Virtual Network Configuration
+VNET_NAME="${ID}_vnet"
+VNET_ADDRESS_PREFIX="192.168.0.0/16"
+VNET_RESOURCE_ID="/subscriptions/${SUBID}/resourceGroups/${NETWORKING_RG}/providers/Microsoft.Network/virtualNetworks/${VNET_NAME}"
 FOUNDRY_SUBNET_NAME="foundry_subnet"
 FOUNDRY_SUBNET_PREFIX="192.168.1.0/24"
+COGNITIVE_SERVICES_SERVICE_ENDPOINT="Microsoft.CognitiveServices"
 RESOURCES_SUBNET_NAME="resources_subnet"
 RESOURCES_SUBNET_PREFIX="192.168.2.0/24"
 AGENTS_DELEGATED_SUBNET_NAME="agentsdelegated_subnet"
 AGENTS_DELEGATED_SUBNET_PREFIX="192.168.3.0/24"
+AGENTS_DELEGATED_SUBNET_RESOURCE_ID="${VNET_RESOURCE_ID}/subnets/${AGENTS_DELEGATED_SUBNET_NAME}"
+CONTAINER_APPS_SUBNET_DELEGATION="Microsoft.App/environments"
 PE_SUBNET_NAME="pe_subnet"
 PE_SUBNET_PREFIX="192.168.4.0/24"
 JUMP_SUBNET_NAME="jump_subnet"
 JUMP_SUBNET_PREFIX="192.168.5.0/24"
+JUMP_VM_SIZE="Standard_DS1_v2"
+JUMP_VM_IMAGE="MicrosoftWindowsDesktop:windows-11:win11-24h2-pro:latest"
+PRIVATE_ENDPOINT_API_VERSION="2025-07-01"
+PRIVATE_ENDPOINT_POLL_INTERVAL_SECONDS=10
+PRIVATE_ENDPOINT_POLL_TIMEOUT_SECONDS=1800
+MANAGEMENT_ENDPOINT="https://management.azure.com"
 
-NETWORKING_RG="aif_stdagent${ID}_networking_rg"
-FOUNDRY_RG="aif_stdagent${ID}_foundry"
-RESOURCES_RG="aif_stdagent${ID}_resources_rg"
-DNS_RG="dns-private-rg"
-
-STORAGE_ACCOUNT_NAME="aifstdagent${ID}storage"
+### Storage Account Configuration
+STORAGE_ACCOUNT_NAME="${ID}storage"
 STORAGE_ACCOUNT_SKU="Standard_LRS"
 STORAGE_PRIVATE_ENDPOINT_NAME="${STORAGE_ACCOUNT_NAME}-pe"
 STORAGE_PRIVATE_DNS_SUB_TARGET="blob"
 STORAGE_PRIVATE_DNS_ZONE="privatelink.blob.core.windows.net"
 STORAGE_PRIVATE_DNS_VNET_LINK_NAME="dns-${STORAGE_ACCOUNT_NAME}-vnetlink"
 
-SEARCH_SERVICE_NAME="aifstdagent${ID}-aisearch"
+### Azure Cognitive Search Configuration
+SEARCH_SERVICE_NAME="${ID}-aisearch"
 SEARCH_SERVICE_SKU="basic"
 SEARCH_PRIVATE_ENDPOINT_NAME="${SEARCH_SERVICE_NAME}-pe"
 SEARCH_PRIVATE_DNS_SUB_TARGET="searchService"
 SEARCH_PRIVATE_DNS_ZONE="privatelink.search.windows.net"
 SEARCH_PRIVATE_DNS_VNET_LINK_NAME="dns-${SEARCH_SERVICE_NAME}-vnetlink"
+SEARCH_RESOURCE_ID="/subscriptions/${SUBID}/resourceGroups/${RESOURCES_RG}/providers/Microsoft.Search/searchServices/${SEARCH_SERVICE_NAME}"
 
-COSMOSDB_SERVICE_NAME="aifstdagent${ID}-cosmosdb"
+### Cosmos DB Configuration
+COSMOSDB_SERVICE_NAME="${ID}-cosmosdb"
 COSMOSDB_PRIVATE_ENDPOINT_NAME="${COSMOSDB_SERVICE_NAME}-pe"
 COSMOSDB_PRIVATE_DNS_SUB_TARGET="sql"
 COSMOSDB_PRIVATE_DNS_ZONE="privatelink.documents.azure.com"
 COSMOSDB_PRIVATE_DNS_VNET_LINK_NAME="dns-${COSMOSDB_SERVICE_NAME}-vnetlink"
+COSMOSDB_RESOURCE_ID="/subscriptions/${SUBID}/resourceGroups/${RESOURCES_RG}/providers/Microsoft.DocumentDB/databaseAccounts/${COSMOSDB_SERVICE_NAME}"
 
-FOUNDRY_SERVICE_NAME="aifstdagent${ID}-foundry"
+### Foundry Service Configuration
+FOUNDRY_SERVICE_NAME="${ID}-foundry"
+FOUNDRY_RESOURCE_ID="/subscriptions/${SUBID}/resourceGroups/${FOUNDRY_RG}/providers/Microsoft.CognitiveServices/accounts/${FOUNDRY_SERVICE_NAME}"
 FOUNDRY_PRIVATE_ENDPOINT_NAME="${FOUNDRY_SERVICE_NAME}-pe"
-FOUNDRY_PRIVATE_DNS_SUB_TARGET="sql"
-FOUNDRY_PRIVATE_DNS_ZONE="privatelink.documents.azure.com"
-FOUNDRY_PRIVATE_DNS_VNET_LINK_NAME="dns-${FOUNDRY_SERVICE_NAME}-vnetlink"
-FOUNDRY_PROJECT_NAME="aifstdagent${ID}-project01"
-FOUNDRY_CAPABILITY_HOST_NAME="agents"
-
-
-VNET_NAME="aif_stdagent${ID}_vnet"
-VNET_ADDRESS_PREFIX="192.168.0.0/16"
-VNET_RESOURCE_ID="/subscriptions/${SUBID}/resourceGroups/${NETWORKING_RG}/providers/Microsoft.Network/virtualNetworks/${VNET_NAME}"
-
-
-
-COGNITIVE_SERVICES_SERVICE_ENDPOINT="Microsoft.CognitiveServices"
-CONTAINER_APPS_SUBNET_DELEGATION="Microsoft.App/environments"
-PRIVATE_ENDPOINT_API_VERSION="2025-07-01"
-PRIVATE_ENDPOINT_POLL_INTERVAL_SECONDS=10
-PRIVATE_ENDPOINT_POLL_TIMEOUT_SECONDS=1800
+FOUNDRY_PRIVATE_DNS_SUB_TARGET="account"
+FOUNDRY_COGNITIVE_PRIVATE_DNS_ZONE="privatelink.cognitiveservices.azure.com"
+FOUNDRY_OPENAI_PRIVATE_DNS_ZONE="privatelink.openai.azure.com"
+FOUNDRY_SERVICES_PRIVATE_DNS_ZONE="privatelink.services.ai.azure.com"
+FOUNDRY_COGNITIVE_DNS_VNET_LINK_NAME="dns-${FOUNDRY_SERVICE_NAME}-cognitive-vnetlink"
+FOUNDRY_OPENAI_DNS_VNET_LINK_NAME="dns-${FOUNDRY_SERVICE_NAME}-openai-vnetlink"
+FOUNDRY_SERVICES_DNS_VNET_LINK_NAME="dns-${FOUNDRY_SERVICE_NAME}-services-vnetlink"
+FOUNDRY_PROJECT_NAME="${ID}-project01"
+FOUNDRY_CAPABILITY_HOST_NAME="agentscaphost"
 FOUNDRY_API_VERSION="2025-04-01-preview"
 FOUNDRY_CAPABILITY_HOST_API_VERSION="2025-06-01"
 FOUNDRY_POLL_INTERVAL_SECONDS=10
 FOUNDRY_POLL_TIMEOUT_SECONDS=1800
 
-MANAGEMENT_ENDPOINT="https://management.azure.com"
-SEARCH_RESOURCE_ID="/subscriptions/${SUBID}/resourceGroups/${RESOURCES_RG}/providers/Microsoft.Search/searchServices/${SEARCH_SERVICE_NAME}"
+### Jump VM Configuration
+JUMPVM_NAME="${ID}-jumpvm"
+JUMPVM_USERNAME="mauromi"
+
+
 
 ###
 
@@ -147,6 +163,7 @@ create_subnet_if_missing() {
 	local resource_group_name="$4"
 	local service_endpoint="$5"
 	local delegation="$6"
+	local default_outbound_access="${7:-false}"
 
 	echo "Checking whether subnet '${subnet_name}' exists in virtual network '${vnet_name}'..."
 	if az network vnet subnet show \
@@ -166,7 +183,7 @@ create_subnet_if_missing() {
 		--vnet-name "${vnet_name}" \
 		--resource-group "${resource_group_name}" \
 		--address-prefixes "${address_prefix}" \
-		--default-outbound false \
+		--default-outbound "${default_outbound_access}" \
 		--subscription "${SUBID}" \
 		--only-show-errors \
 		--output none; then
@@ -205,6 +222,81 @@ create_subnet_if_missing() {
 	fi
 
 	echo "Subnet '${subnet_name}' created and configured successfully."
+}
+
+create_jumpvm() {
+	local jumpvm_name="$1"
+	local resource_group="$2"
+	local vnet_name="$3"
+	local subnet_name="$4"
+	local location="$5"
+	local username="$6"
+	local pwd="$7"
+	local computer_name="${jumpvm_name//[^[:alnum:]-]/-}"
+	local public_ip_name="${jumpvm_name}-pip"
+	local nsg_name="${jumpvm_name}-nsg"
+	local subnet_resource_id=""
+
+	if [[ -z "${jumpvm_name}" || -z "${resource_group}" || -z "${vnet_name}" || -z "${subnet_name}" || -z "${location}" || -z "${username}" || -z "${pwd}" ]]; then
+		echo "VM name, resource group, VNet name, subnet name, location, username, and password are required." >&2
+		return 1
+	fi
+
+	if ! IFS= read -r subnet_resource_id < <(
+		az network vnet subnet show \
+			--name "${subnet_name}" \
+			--vnet-name "${vnet_name}" \
+			--resource-group "${NETWORKING_RG}" \
+			--subscription "${SUBID}" \
+			--query id \
+			--output tsv \
+			--only-show-errors
+	); then
+		echo "Unable to find subnet '${subnet_name}' in VNet '${vnet_name}' and resource group '${NETWORKING_RG}'." >&2
+		return 1
+	fi
+
+	if az vm show \
+		--name "${jumpvm_name}" \
+		--resource-group "${resource_group}" \
+		--subscription "${SUBID}" \
+		--only-show-errors \
+		--output none 2>/dev/null; then
+		echo "Jump VM '${jumpvm_name}' already exists in resource group '${resource_group}'; creation skipped."
+		return
+	fi
+
+	# No --zone or --availability-set is supplied: no infrastructure redundancy is requested.
+	# Standard_LRS minimizes disk cost; --nsg-rule RDP permits inbound TCP/3389.
+	echo "Creating Windows 11 jump VM '${jumpvm_name}' in subnet '${subnet_name}'..."
+	if az vm create \
+		--name "${jumpvm_name}" \
+		--computer-name "${computer_name:0:15}" \
+		--resource-group "${resource_group}" \
+		--location "${location}" \
+		--subnet "${subnet_resource_id}" \
+		--size "${JUMP_VM_SIZE}" \
+		--image "${JUMP_VM_IMAGE}" \
+		--admin-username "${username}" \
+		--admin-password "${pwd}" \
+		--license-type Windows_Client \
+		--storage-sku Standard_LRS \
+		--public-ip-address "${public_ip_name}" \
+		--public-ip-sku Standard \
+		--nsg "${nsg_name}" \
+		--nsg-rule RDP \
+		--nic-delete-option Delete \
+		--os-disk-delete-option Delete \
+		--subscription "${SUBID}" \
+		--only-show-errors \
+		--output none; then
+		pwd=""
+		echo "Jump VM '${jumpvm_name}' created successfully with Azure Hybrid Benefit and RDP enabled."
+		return
+	fi
+
+	echo "Failed to create jump VM '${jumpvm_name}'. Review the Azure CLI error above." >&2
+	return 1
 }
 
 create_private_endpoint_if_missing() {
@@ -634,6 +726,64 @@ wait_for_foundry_resource_succeeded() {
 	return 1
 }
 
+disable_public_network_access_if_private_ready() {
+	local network_injection_subnet_id=""
+	local private_endpoint_name=""
+	local private_endpoint_status=""
+	local private_endpoint_names=(
+		"${STORAGE_PRIVATE_ENDPOINT_NAME}"
+		"${SEARCH_PRIVATE_ENDPOINT_NAME}"
+		"${COSMOSDB_PRIVATE_ENDPOINT_NAME}"
+		"${FOUNDRY_PRIVATE_ENDPOINT_NAME}"
+	)
+
+	if ! network_injection_subnet_id="$(
+		az cognitiveservices account show \
+			--name "${FOUNDRY_SERVICE_NAME}" \
+			--resource-group "${FOUNDRY_RG}" \
+			--subscription "${SUBID}" \
+			--query "properties.networkInjections[?scenario=='agent'].subnetArmId | [0]" \
+			--output tsv \
+			--only-show-errors
+	)"; then
+		echo "Unable to inspect Foundry network injection." >&2
+		return 1
+	fi
+
+	if [[ "${network_injection_subnet_id,,}" != "${AGENTS_DELEGATED_SUBNET_RESOURCE_ID,,}" ]]; then
+		echo "Public access was not changed: the Foundry account is not injected into '${AGENTS_DELEGATED_SUBNET_RESOURCE_ID}'." >&2
+		echo "Redeploy the Foundry account with networkInjections.scenario='agent' before making its capability-host dependencies private." >&2
+		return 1
+	fi
+
+	for private_endpoint_name in "${private_endpoint_names[@]}"; do
+		if ! IFS= read -r private_endpoint_status < <(
+			az network private-endpoint show \
+				--name "${private_endpoint_name}" \
+				--resource-group "${NETWORKING_RG}" \
+				--subscription "${SUBID}" \
+				--query "join('/', [provisioningState, privateLinkServiceConnections[0].privateLinkServiceConnectionState.status])" \
+				--output tsv \
+				--only-show-errors
+		); then
+			echo "Public access was not changed: private endpoint '${private_endpoint_name}' could not be inspected." >&2
+			return 1
+		fi
+
+		if [[ "${private_endpoint_status}" != "Succeeded/Approved" ]]; then
+			echo "Public access was not changed: private endpoint '${private_endpoint_name}' is '${private_endpoint_status}', not 'Succeeded/Approved'." >&2
+			return 1
+		fi
+	done
+
+	echo "Disabling public network access on Foundry and its capability-host dependencies..."
+	az resource update --ids "${FOUNDRY_RESOURCE_ID}" --set properties.publicNetworkAccess=Disabled properties.networkAcls.defaultAction=Deny properties.networkAcls.bypass=AzureServices --subscription "${SUBID}" --only-show-errors --output none || return 1
+	az storage account update --name "${STORAGE_ACCOUNT_NAME}" --resource-group "${RESOURCES_RG}" --public-network-access Disabled --default-action Deny --bypass AzureServices --subscription "${SUBID}" --only-show-errors --output none || return 1
+	az search service update --name "${SEARCH_SERVICE_NAME}" --resource-group "${RESOURCES_RG}" --public-network-access disabled --subscription "${SUBID}" --only-show-errors --output none || return 1
+	az cosmosdb update --name "${COSMOSDB_SERVICE_NAME}" --resource-group "${RESOURCES_RG}" --public-network-access Disabled --subscription "${SUBID}" --only-show-errors --output none || return 1
+	echo "Public network access disabled on Foundry, Storage, Azure AI Search, and Cosmos DB."
+}
+
 create_foundry_if_missing() {
 	local service_name="$1"
 	local resource_group_name="$2"
@@ -647,7 +797,6 @@ create_foundry_if_missing() {
 	local storage_connection_url="${MANAGEMENT_ENDPOINT}${project_resource_path}/connections/${STORAGE_ACCOUNT_NAME}?api-version=${FOUNDRY_API_VERSION}"
 	local search_connection_url="${MANAGEMENT_ENDPOINT}${project_resource_path}/connections/${SEARCH_SERVICE_NAME}?api-version=${FOUNDRY_API_VERSION}"
 	local cosmosdb_connection_url="${MANAGEMENT_ENDPOINT}${project_resource_path}/connections/${COSMOSDB_SERVICE_NAME}?api-version=${FOUNDRY_API_VERSION}"
-	local account_capability_host_url="${MANAGEMENT_ENDPOINT}${account_resource_path}/capabilityHosts/${FOUNDRY_CAPABILITY_HOST_NAME}?api-version=${FOUNDRY_CAPABILITY_HOST_API_VERSION}"
 	local project_capability_host_url="${MANAGEMENT_ENDPOINT}${project_resource_path}/capabilityHosts/${FOUNDRY_CAPABILITY_HOST_NAME}?api-version=${FOUNDRY_CAPABILITY_HOST_API_VERSION}"
 	local project_principal_id=""
 
@@ -658,24 +807,18 @@ create_foundry_if_missing() {
 		--subscription "${SUBID}" \
 		--only-show-errors \
 		--output none 2>/dev/null; then
-		echo "Creating Microsoft Foundry account '${service_name}' in '${location}'..."
-		if ! az cognitiveservices account create \
-			--name "${service_name}" \
-			--resource-group "${resource_group_name}" \
-			--location "${location}" \
-			--kind AIServices \
-			--sku S0 \
-			--custom-domain "${service_name}" \
-			--allow-project-management true \
-			--assign-identity \
-			--yes \
-			--subscription "${SUBID}" \
+		echo "Creating network-injected Microsoft Foundry account '${service_name}' in '${location}'..."
+		if ! az rest \
+			--method put \
+			--url "${MANAGEMENT_ENDPOINT}${account_resource_path}?api-version=${FOUNDRY_API_VERSION}" \
+			--body "{\"location\":\"${location}\",\"kind\":\"AIServices\",\"sku\":{\"name\":\"S0\"},\"identity\":{\"type\":\"SystemAssigned\"},\"properties\":{\"allowProjectManagement\":true,\"customSubDomainName\":\"${service_name}\",\"publicNetworkAccess\":\"Disabled\",\"networkAcls\":{\"defaultAction\":\"Deny\",\"virtualNetworkRules\":[],\"ipRules\":[],\"bypass\":\"AzureServices\"},\"networkInjections\":[{\"scenario\":\"agent\",\"subnetArmId\":\"${AGENTS_DELEGATED_SUBNET_RESOURCE_ID}\",\"useMicrosoftManagedNetwork\":false}]}}" \
 			--only-show-errors \
 			--output none; then
 			echo "Failed to create Microsoft Foundry account '${service_name}'." >&2
 			return 1
 		fi
-		echo "Microsoft Foundry account '${service_name}' created successfully with public network access."
+		echo "Microsoft Foundry account '${service_name}' created with VNet injection and public network access disabled."
+		wait_for_foundry_resource_succeeded "${MANAGEMENT_ENDPOINT}${account_resource_path}?api-version=${FOUNDRY_API_VERSION}" "Microsoft Foundry account '${service_name}'" || return 1
 	else
 		echo "Microsoft Foundry account '${service_name}' already exists; creation skipped."
 	fi
@@ -743,18 +886,6 @@ create_foundry_if_missing() {
 	az rest --method put --url "${cosmosdb_connection_url}" --body "{\"properties\":{\"category\":\"CosmosDB\",\"target\":\"https://${COSMOSDB_SERVICE_NAME}.documents.azure.com:443/\",\"authType\":\"AAD\",\"metadata\":{\"ApiType\":\"Azure\",\"ResourceId\":\"${cosmosdb_resource_id}\",\"location\":\"${location}\"}}}" --only-show-errors --output none || return 1
 	wait_for_foundry_resource_succeeded "${cosmosdb_connection_url}" "project connection '${COSMOSDB_SERVICE_NAME}'" || return 1
 
-	echo "Creating account capability host '${FOUNDRY_CAPABILITY_HOST_NAME}'..."
-	if ! az rest \
-		--method put \
-		--url "${account_capability_host_url}" \
-		--body '{"properties":{"capabilityHostKind":"Agents"}}' \
-		--only-show-errors \
-		--output none; then
-		echo "Failed to create the account capability host." >&2
-		return 1
-	fi
-	wait_for_foundry_resource_succeeded "${account_capability_host_url}" "account capability host '${FOUNDRY_CAPABILITY_HOST_NAME}'" || return 1
-
 	echo "Creating project capability host '${FOUNDRY_CAPABILITY_HOST_NAME}' with customer-owned data services..."
 	if ! az rest \
 		--method put \
@@ -771,40 +902,53 @@ create_foundry_if_missing() {
 }
 
 
+create_resource_group_if_missing "${NETWORKING_RG}"
+create_resource_group_if_missing "${FOUNDRY_RG}"
+create_resource_group_if_missing "${RESOURCES_RG}"
+create_resource_group_if_missing "${DNS_RG}"
+create_resource_group_if_missing "${JUMPVM_RG}"
 
-# create_resource_group_if_missing "${NETWORKING_RG}"
-# create_resource_group_if_missing "${FOUNDRY_RG}"
-# create_resource_group_if_missing "${RESOURCES_RG}"
-# create_resource_group_if_missing "${DNS_RG}"
-# create_vnet_if_missing "${VNET_NAME}" "${NETWORKING_RG}" "${VNET_ADDRESS_PREFIX}"
-# create_subnet_if_missing "${VNET_NAME}" "${FOUNDRY_SUBNET_NAME}" "${FOUNDRY_SUBNET_PREFIX}" "${NETWORKING_RG}" "${COGNITIVE_SERVICES_SERVICE_ENDPOINT}" ""
-# create_subnet_if_missing "${VNET_NAME}" "${RESOURCES_SUBNET_NAME}" "${RESOURCES_SUBNET_PREFIX}" "${NETWORKING_RG}" "" ""
-# create_subnet_if_missing "${VNET_NAME}" "${AGENTS_DELEGATED_SUBNET_NAME}" "${AGENTS_DELEGATED_SUBNET_PREFIX}" "${NETWORKING_RG}" "" "${CONTAINER_APPS_SUBNET_DELEGATION}"
-# create_subnet_if_missing "${VNET_NAME}" "${PE_SUBNET_NAME}" "${PE_SUBNET_PREFIX}" "${NETWORKING_RG}" "" ""
-# create_subnet_if_missing "${VNET_NAME}" "${JUMP_SUBNET_NAME}" "${JUMP_SUBNET_PREFIX}" "${NETWORKING_RG}" "" ""
-# create_storage_account_if_missing "${STORAGE_ACCOUNT_NAME}" "${RESOURCES_RG}"
-# create_aisearch_if_missing "${SEARCH_SERVICE_NAME}" "${RESOURCES_RG}"
-# create_cosmosdb_if_missing "${COSMOSDB_SERVICE_NAME}" "${RESOURCES_RG}" "${LOCATION}"
+create_vnet_if_missing "${VNET_NAME}" "${NETWORKING_RG}" "${VNET_ADDRESS_PREFIX}"
+create_subnet_if_missing "${VNET_NAME}" "${FOUNDRY_SUBNET_NAME}" "${FOUNDRY_SUBNET_PREFIX}" "${NETWORKING_RG}" "${COGNITIVE_SERVICES_SERVICE_ENDPOINT}" ""
+create_subnet_if_missing "${VNET_NAME}" "${RESOURCES_SUBNET_NAME}" "${RESOURCES_SUBNET_PREFIX}" "${NETWORKING_RG}" "" ""
+# The injected Agent runtime requires explicit outbound access unless a NAT gateway or UDR/firewall is attached.
+create_subnet_if_missing "${VNET_NAME}" "${AGENTS_DELEGATED_SUBNET_NAME}" "${AGENTS_DELEGATED_SUBNET_PREFIX}" "${NETWORKING_RG}" "" "${CONTAINER_APPS_SUBNET_DELEGATION}" true
+create_subnet_if_missing "${VNET_NAME}" "${PE_SUBNET_NAME}" "${PE_SUBNET_PREFIX}" "${NETWORKING_RG}" "" ""
+create_subnet_if_missing "${VNET_NAME}" "${JUMP_SUBNET_NAME}" "${JUMP_SUBNET_PREFIX}" "${NETWORKING_RG}" "" ""
+
+create_storage_account_if_missing "${STORAGE_ACCOUNT_NAME}" "${RESOURCES_RG}"
+create_aisearch_if_missing "${SEARCH_SERVICE_NAME}" "${RESOURCES_RG}"
+create_cosmosdb_if_missing "${COSMOSDB_SERVICE_NAME}" "${RESOURCES_RG}" "${LOCATION}"
 create_foundry_if_missing "${FOUNDRY_SERVICE_NAME}" "${FOUNDRY_RG}" "${LOCATION}" "${FOUNDRY_PROJECT_NAME}"
 
 # Storage Account - Private Endpoint
-# STORAGE_RESOURCE_ID="/subscriptions/${SUBID}/resourceGroups/${RESOURCES_RG}/providers/Microsoft.Storage/storageAccounts/${STORAGE_ACCOUNT_NAME}"
-# create_private_endpoint_if_missing "${NETWORKING_RG}" "${STORAGE_RESOURCE_ID}" "${STORAGE_PRIVATE_DNS_SUB_TARGET}" "dynamic" "${STORAGE_PRIVATE_ENDPOINT_NAME}" "${VNET_NAME}" "${PE_SUBNET_NAME}" "${NETWORKING_RG}"
-# AddDnsZoneConfiguration "${SUBID}" "${DNS_RG}" "${STORAGE_PRIVATE_DNS_SUB_TARGET}" "${STORAGE_PRIVATE_DNS_ZONE}" "${NETWORKING_RG}" "${STORAGE_PRIVATE_ENDPOINT_NAME}"
-# create_private_dns_vnet_link_if_missing "${SUBID}" "${DNS_RG}" "${STORAGE_PRIVATE_DNS_ZONE}" "${VNET_RESOURCE_ID}" "${STORAGE_PRIVATE_DNS_VNET_LINK_NAME}"
+STORAGE_RESOURCE_ID="/subscriptions/${SUBID}/resourceGroups/${RESOURCES_RG}/providers/Microsoft.Storage/storageAccounts/${STORAGE_ACCOUNT_NAME}"
+create_private_endpoint_if_missing "${NETWORKING_RG}" "${STORAGE_RESOURCE_ID}" "${STORAGE_PRIVATE_DNS_SUB_TARGET}" "dynamic" "${STORAGE_PRIVATE_ENDPOINT_NAME}" "${VNET_NAME}" "${PE_SUBNET_NAME}" "${NETWORKING_RG}"
+AddDnsZoneConfiguration "${SUBID}" "${DNS_RG}" "${STORAGE_PRIVATE_DNS_SUB_TARGET}" "${STORAGE_PRIVATE_DNS_ZONE}" "${NETWORKING_RG}" "${STORAGE_PRIVATE_ENDPOINT_NAME}"
+create_private_dns_vnet_link_if_missing "${SUBID}" "${DNS_RG}" "${STORAGE_PRIVATE_DNS_ZONE}" "${VNET_RESOURCE_ID}" "${STORAGE_PRIVATE_DNS_VNET_LINK_NAME}"
 
 # Azure AI Search - Private Endpoint
-# create_private_endpoint_if_missing "${NETWORKING_RG}" "${SEARCH_RESOURCE_ID}" "${SEARCH_PRIVATE_DNS_SUB_TARGET}" "dynamic" "${SEARCH_PRIVATE_ENDPOINT_NAME}" "${VNET_NAME}" "${PE_SUBNET_NAME}" "${NETWORKING_RG}"
-# AddDnsZoneConfiguration "${SUBID}" "${DNS_RG}" "${SEARCH_PRIVATE_DNS_SUB_TARGET}" "${SEARCH_PRIVATE_DNS_ZONE}" "${NETWORKING_RG}" "${SEARCH_PRIVATE_ENDPOINT_NAME}"
-# create_private_dns_vnet_link_if_missing "${SUBID}" "${DNS_RG}" "${SEARCH_PRIVATE_DNS_ZONE}" "${VNET_RESOURCE_ID}" "${SEARCH_PRIVATE_DNS_VNET_LINK_NAME}"
+create_private_endpoint_if_missing "${NETWORKING_RG}" "${SEARCH_RESOURCE_ID}" "${SEARCH_PRIVATE_DNS_SUB_TARGET}" "dynamic" "${SEARCH_PRIVATE_ENDPOINT_NAME}" "${VNET_NAME}" "${PE_SUBNET_NAME}" "${NETWORKING_RG}"
+AddDnsZoneConfiguration "${SUBID}" "${DNS_RG}" "${SEARCH_PRIVATE_DNS_SUB_TARGET}" "${SEARCH_PRIVATE_DNS_ZONE}" "${NETWORKING_RG}" "${SEARCH_PRIVATE_ENDPOINT_NAME}"
+create_private_dns_vnet_link_if_missing "${SUBID}" "${DNS_RG}" "${SEARCH_PRIVATE_DNS_ZONE}" "${VNET_RESOURCE_ID}" "${SEARCH_PRIVATE_DNS_VNET_LINK_NAME}"
 
 # Azure CosmosDB - Private Endpoint
-COSMOSDB_RESOURCE_ID="/subscriptions/${SUBID}/resourceGroups/${RESOURCES_RG}/providers/Microsoft.DocumentDB/databaseAccounts/${COSMOSDB_SERVICE_NAME}"
-# create_private_endpoint_if_missing "${NETWORKING_RG}" "${COSMOSDB_RESOURCE_ID}" "${COSMOSDB_PRIVATE_DNS_SUB_TARGET}" "dynamic" "${COSMOSDB_PRIVATE_ENDPOINT_NAME}" "${VNET_NAME}" "${PE_SUBNET_NAME}" "${NETWORKING_RG}"
+create_private_endpoint_if_missing "${NETWORKING_RG}" "${COSMOSDB_RESOURCE_ID}" "${COSMOSDB_PRIVATE_DNS_SUB_TARGET}" "dynamic" "${COSMOSDB_PRIVATE_ENDPOINT_NAME}" "${VNET_NAME}" "${PE_SUBNET_NAME}" "${NETWORKING_RG}"
 AddDnsZoneConfiguration "${SUBID}" "${DNS_RG}" "${COSMOSDB_PRIVATE_DNS_SUB_TARGET}" "${COSMOSDB_PRIVATE_DNS_ZONE}" "${NETWORKING_RG}" "${COSMOSDB_PRIVATE_ENDPOINT_NAME}"
 create_private_dns_vnet_link_if_missing "${SUBID}" "${DNS_RG}" "${COSMOSDB_PRIVATE_DNS_ZONE}" "${VNET_RESOURCE_ID}" "${COSMOSDB_PRIVATE_DNS_VNET_LINK_NAME}"
 
 # Azure Foundry - Private Endpoint
-# create_private_endpoint_if_missing "${NETWORKING_RG}" "${FOUNDRY_RESOURCE_ID}" "${FOUNDRY_PRIVATE_DNS_SUB_TARGET}" "dynamic" "${FOUNDRY_PRIVATE_ENDPOINT_NAME}" "${VNET_NAME}" "${PE_SUBNET_NAME}" "${NETWORKING_RG}"
-# AddDnsZoneConfiguration "${SUBID}" "${DNS_RG}" "${FOUNDRY_PRIVATE_DNS_SUB_TARGET}" "${FOUNDRY_PRIVATE_DNS_ZONE}" "${NETWORKING_RG}" "${FOUNDRY_PRIVATE_ENDPOINT_NAME}"
-# create_private_dns_vnet_link_if_missing "${SUBID}" "${DNS_RG}" "${FOUNDRY_PRIVATE_DNS_ZONE}" "${VNET_RESOURCE_ID}" "${FOUNDRY_PRIVATE_DNS_VNET_LINK_NAME}"
+create_private_endpoint_if_missing "${NETWORKING_RG}" "${FOUNDRY_RESOURCE_ID}" "${FOUNDRY_PRIVATE_DNS_SUB_TARGET}" "dynamic" "${FOUNDRY_PRIVATE_ENDPOINT_NAME}" "${VNET_NAME}" "${PE_SUBNET_NAME}" "${NETWORKING_RG}"
+AddDnsZoneConfiguration "${SUBID}" "${DNS_RG}" "${FOUNDRY_PRIVATE_DNS_SUB_TARGET}" "${FOUNDRY_COGNITIVE_PRIVATE_DNS_ZONE}" "${NETWORKING_RG}" "${FOUNDRY_PRIVATE_ENDPOINT_NAME}" "default" "privatelink_cognitiveservices_azure_com"
+AddDnsZoneConfiguration "${SUBID}" "${DNS_RG}" "${FOUNDRY_PRIVATE_DNS_SUB_TARGET}" "${FOUNDRY_OPENAI_PRIVATE_DNS_ZONE}" "${NETWORKING_RG}" "${FOUNDRY_PRIVATE_ENDPOINT_NAME}" "default" "privatelink_openai_azure_com"
+AddDnsZoneConfiguration "${SUBID}" "${DNS_RG}" "${FOUNDRY_PRIVATE_DNS_SUB_TARGET}" "${FOUNDRY_SERVICES_PRIVATE_DNS_ZONE}" "${NETWORKING_RG}" "${FOUNDRY_PRIVATE_ENDPOINT_NAME}" "default" "privatelink_services_ai_azure_com"
+create_private_dns_vnet_link_if_missing "${SUBID}" "${DNS_RG}" "${FOUNDRY_COGNITIVE_PRIVATE_DNS_ZONE}" "${VNET_RESOURCE_ID}" "${FOUNDRY_COGNITIVE_DNS_VNET_LINK_NAME}"
+create_private_dns_vnet_link_if_missing "${SUBID}" "${DNS_RG}" "${FOUNDRY_OPENAI_PRIVATE_DNS_ZONE}" "${VNET_RESOURCE_ID}" "${FOUNDRY_OPENAI_DNS_VNET_LINK_NAME}"
+create_private_dns_vnet_link_if_missing "${SUBID}" "${DNS_RG}" "${FOUNDRY_SERVICES_PRIVATE_DNS_ZONE}" "${VNET_RESOURCE_ID}" "${FOUNDRY_SERVICES_DNS_VNET_LINK_NAME}"
+
+### Run only after all four private endpoints and Foundry VNet injection are ready.
+disable_public_network_access_if_private_ready
+
+read -rsp "Jump VM password: " JUMPVM_PASSWORD && echo
+create_jumpvm "${JUMPVM_NAME}" "${JUMPVM_RG}" "${VNET_NAME}" "${JUMP_SUBNET_NAME}" "${LOCATION}" "${JUMPVM_USERNAME}" "${JUMPVM_PASSWORD}"
+unset JUMPVM_PASSWORD
