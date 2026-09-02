@@ -8,7 +8,7 @@
 
 ### Azure resource configuration. These values are not secrets.
 
-ID="aif02"
+ID="aif04"
 
 SUBID="eca2eddb-0f0c-4351-a634-52751499eeea"
 LOCATION="swedencentral"
@@ -37,7 +37,7 @@ PE_SUBNET_NAME="pe_subnet"
 PE_SUBNET_PREFIX="192.168.4.0/24"
 JUMP_SUBNET_NAME="jump_subnet"
 JUMP_SUBNET_PREFIX="192.168.5.0/24"
-JUMP_VM_SIZE="Standard_DS1_v2"
+JUMP_VM_SIZE="Standard_DS3_v2"
 JUMP_VM_IMAGE="MicrosoftWindowsDesktop:windows-11:win11-24h2-pro:latest"
 PRIVATE_ENDPOINT_API_VERSION="2025-07-01"
 PRIVATE_ENDPOINT_POLL_INTERVAL_SECONDS=10
@@ -90,10 +90,18 @@ FOUNDRY_POLL_TIMEOUT_SECONDS=1800
 ### Jump VM Configuration
 JUMPVM_NAME="${ID}-jumpvm"
 JUMPVM_USERNAME="mauromi"
-
+read -rsp "Jump VM password: " JUMPVM_PASSWORD && echo
 
 
 ###
+echo() {
+	if (( $# == 0 )); then
+		builtin printf '\n'
+		return
+	fi
+
+	builtin printf '[%(%Y-%m-%d %H:%M:%S%z)T] %s\n' -1 "$*"
+}
 
 create_resource_group_if_missing() {
 	local resource_group_name="$1"
@@ -236,6 +244,7 @@ create_jumpvm() {
 	local public_ip_name="${jumpvm_name}-pip"
 	local nsg_name="${jumpvm_name}-nsg"
 	local subnet_resource_id=""
+	local expected_subnet_resource_id="/subscriptions/${SUBID}/resourceGroups/${NETWORKING_RG}/providers/Microsoft.Network/virtualNetworks/${vnet_name}/subnets/${subnet_name}"
 
 	if [[ -z "${jumpvm_name}" || -z "${resource_group}" || -z "${vnet_name}" || -z "${subnet_name}" || -z "${location}" || -z "${username}" || -z "${pwd}" ]]; then
 		echo "VM name, resource group, VNet name, subnet name, location, username, and password are required." >&2
@@ -253,6 +262,12 @@ create_jumpvm() {
 			--only-show-errors
 	); then
 		echo "Unable to find subnet '${subnet_name}' in VNet '${vnet_name}' and resource group '${NETWORKING_RG}'." >&2
+		return 1
+	fi
+	subnet_resource_id="${subnet_resource_id//$'\r'/}"
+
+	if [[ "${subnet_resource_id}" != "${expected_subnet_resource_id}" ]]; then
+		echo "Unexpected subnet resource ID returned by Azure CLI: '${subnet_resource_id:-<empty>}'. Expected '${expected_subnet_resource_id}'." >&2
 		return 1
 	fi
 
@@ -365,6 +380,7 @@ wait_for_private_endpoint_succeeded() {
 	local timeout_seconds="${5:-${PRIVATE_ENDPOINT_POLL_TIMEOUT_SECONDS}}"
 	local elapsed_seconds=0
 	local provisioning_state=""
+	local last_reported_state=""
 
 	echo "Waiting for private endpoint '${private_endpoint_name}' to reach provisioning state 'Succeeded'..."
 	while (( elapsed_seconds <= timeout_seconds )); do
@@ -380,6 +396,7 @@ wait_for_private_endpoint_succeeded() {
 			echo "Unable to read the provisioning state of private endpoint '${private_endpoint_name}'." >&2
 			return 1
 		fi
+		provisioning_state="${provisioning_state//$'\r'/}"
 
 		case "${provisioning_state}" in
 			Succeeded)
@@ -396,7 +413,10 @@ wait_for_private_endpoint_succeeded() {
 			break
 		fi
 
-		echo "Private endpoint '${private_endpoint_name}' is '${provisioning_state:-Unknown}'. Checking again in ${poll_interval_seconds} seconds..."
+		if [[ "${provisioning_state}" != "${last_reported_state}" ]] || (( elapsed_seconds % 60 == 0 )); then
+			echo "Private endpoint '${private_endpoint_name}': state='${provisioning_state:-Unknown}', elapsed=${elapsed_seconds}s; next check in ${poll_interval_seconds}s."
+			last_reported_state="${provisioning_state}"
+		fi
 		sleep "${poll_interval_seconds}"
 		(( elapsed_seconds += poll_interval_seconds ))
 	done
@@ -640,11 +660,16 @@ create_cosmosdb_if_missing() {
 }
 
 assign_role_if_missing() {
-	local principal_id="$1"
+	local principal_id="${1//$'\r'/}"
 	local role_definition_id="$2"
 	local scope="$3"
 	local role_name="$4"
 	local existing_assignment_id=""
+
+	if [[ ! "${principal_id}" =~ ^[[:xdigit:]]{8}-[[:xdigit:]]{4}-[[:xdigit:]]{4}-[[:xdigit:]]{4}-[[:xdigit:]]{12}$ ]]; then
+		echo "Invalid principal ID for role '${role_name}': '${principal_id:-<empty>}'." >&2
+		return 1
+	fi
 
 	if ! IFS= read -r existing_assignment_id < <(
 		az role assignment list \
@@ -659,6 +684,7 @@ assign_role_if_missing() {
 		echo "Failed to check role '${role_name}' for principal '${principal_id}'." >&2
 		return 1
 	fi
+	existing_assignment_id="${existing_assignment_id//$'\r'/}"
 
 	if [[ -n "${existing_assignment_id}" ]]; then
 		echo "Role '${role_name}' is already assigned on '${scope}'; assignment skipped."
@@ -686,10 +712,11 @@ wait_for_foundry_resource_succeeded() {
 	local resource_url="$1"
 	local resource_label="$2"
 	local elapsed_seconds=0
+	local start_seconds="${SECONDS}"
 	local provisioning_state=""
 
 	echo "Waiting for ${resource_label} to reach provisioning state 'Succeeded'..."
-	while (( elapsed_seconds <= FOUNDRY_POLL_TIMEOUT_SECONDS )); do
+	while (( elapsed_seconds < FOUNDRY_POLL_TIMEOUT_SECONDS )); do
 		if ! IFS= read -r provisioning_state < <(
 			az rest \
 				--method get \
@@ -701,6 +728,8 @@ wait_for_foundry_resource_succeeded() {
 			echo "Unable to read the provisioning state of ${resource_label}." >&2
 			return 1
 		fi
+		provisioning_state="${provisioning_state//$'\r'/}"
+		elapsed_seconds=$((SECONDS - start_seconds))
 
 		case "${provisioning_state}" in
 			Succeeded)
@@ -713,13 +742,13 @@ wait_for_foundry_resource_succeeded() {
 				;;
 		esac
 
-		if (( elapsed_seconds == FOUNDRY_POLL_TIMEOUT_SECONDS )); then
+		if (( elapsed_seconds >= FOUNDRY_POLL_TIMEOUT_SECONDS )); then
 			break
 		fi
 
-		echo "${resource_label} is '${provisioning_state:-Unknown}'. Checking again in ${FOUNDRY_POLL_INTERVAL_SECONDS} seconds..."
+		echo "${resource_label}: state='${provisioning_state:-Unknown}', elapsed=${elapsed_seconds}s; next check after a ${FOUNDRY_POLL_INTERVAL_SECONDS}s wait."
 		sleep "${FOUNDRY_POLL_INTERVAL_SECONDS}"
-		(( elapsed_seconds += FOUNDRY_POLL_INTERVAL_SECONDS ))
+		elapsed_seconds=$((SECONDS - start_seconds))
 	done
 
 	echo "Timed out after ${FOUNDRY_POLL_TIMEOUT_SECONDS} seconds waiting for ${resource_label}." >&2
@@ -749,6 +778,7 @@ disable_public_network_access_if_private_ready() {
 		echo "Unable to inspect Foundry network injection." >&2
 		return 1
 	fi
+	network_injection_subnet_id="${network_injection_subnet_id//$'\r'/}"
 
 	if [[ "${network_injection_subnet_id,,}" != "${AGENTS_DELEGATED_SUBNET_RESOURCE_ID,,}" ]]; then
 		echo "Public access was not changed: the Foundry account is not injected into '${AGENTS_DELEGATED_SUBNET_RESOURCE_ID}'." >&2
@@ -769,6 +799,7 @@ disable_public_network_access_if_private_ready() {
 			echo "Public access was not changed: private endpoint '${private_endpoint_name}' could not be inspected." >&2
 			return 1
 		fi
+		private_endpoint_status="${private_endpoint_status//$'\r'/}"
 
 		if [[ "${private_endpoint_status}" != "Succeeded/Approved" ]]; then
 			echo "Public access was not changed: private endpoint '${private_endpoint_name}' is '${private_endpoint_status}', not 'Succeeded/Approved'." >&2
@@ -864,6 +895,7 @@ create_foundry_if_missing() {
 		echo "Failed to retrieve the managed identity of Foundry project '${project_name}'." >&2
 		return 1
 	fi
+	project_principal_id="${project_principal_id//$'\r'/}"
 	if [[ -z "${project_principal_id}" ]]; then
 		echo "Foundry project '${project_name}' does not expose a system-assigned managed identity." >&2
 		return 1
@@ -949,6 +981,5 @@ create_private_dns_vnet_link_if_missing "${SUBID}" "${DNS_RG}" "${FOUNDRY_SERVIC
 ### Run only after all four private endpoints and Foundry VNet injection are ready.
 disable_public_network_access_if_private_ready
 
-read -rsp "Jump VM password: " JUMPVM_PASSWORD && echo
 create_jumpvm "${JUMPVM_NAME}" "${JUMPVM_RG}" "${VNET_NAME}" "${JUMP_SUBNET_NAME}" "${LOCATION}" "${JUMPVM_USERNAME}" "${JUMPVM_PASSWORD}"
 unset JUMPVM_PASSWORD
