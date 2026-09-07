@@ -1,0 +1,53 @@
+# https://learn.microsoft.com/en-us/azure/ai-services/agents/quickstart?pivots=rest-api
+# az login --use-device-code --tenant <your-tenant-id-or-domain>
+# az config set extension.dynamic_install_allow_preview=true
+# az account tenant list --output table
+# for Azure Management tasks --> az account get-access-token --resource https://management.core.windows.net/
+# for OpenAI tasks --> az account get-access-token --resource https://cognitiveservices.azure.com/
+# for Foundry Applications --> az account get-access-token --resource https://ai.azure.com/
+# for Azure Search tasks --> az account get-access-token --resource https://search.azure.com/
+# for Machine Learning tasks --> az account get-access-token --resource https://ml.azure.com/ 
+
+# OpenAI Endpoints:
+# - OpenAI main:     {{azure_openai_main_endpoint}}
+# - OpenAI fallback: {{azure_openai_fallback_endpoint}}
+# - APIM:            {{apim_service_gatewayurl}}/{{apim_api_name}}/, BUT App Registration in Entra ID is needed
+# ha01-echoagent or ha02-azureopenaiagent ha02-agentserverresponses-llmagent
+
+
+@toolbox_endpoint=https://mm-ai-upskilling-project-resourc.services.ai.azure.com/api/projects/ai-upskilling-project/toolboxes/MarketingAnalysisToolbox/versions/6/mcp?api-version=v1
+
+@query=Putin ordina una tregua di tre giorni su Kiev a partire dalla mezzanotte di oggi prima del vertice con Kushner e Witkoff atterrati da poco a Mosca
+
+###
+# Tools/Skills list
+POST {{toolbox_endpoint}}
+Authorization: Bearer {{bearertoken_user-token_for_foundry}}
+Content-Type: application/json
+Accept: application/json
+Foundry-Features: Skills=V1Preview
+
+{
+  "jsonrpc": "2.0",
+  "id": "1",
+  "method": "tools/list",
+  "params": {}
+}
+
+###
+# Invoking the toolbox through a Foundry Application REST call for Marketing Analysis Toolbox
+POST {{toolbox_endpoint}}
+Authorization: Bearer {{bearertoken_user-token_for_foundry}}
+Content-Type: application/json
+
+{
+  "jsonrpc": "2.0",
+  "id": "1",
+  "method": "tools/call",
+  "params": {
+    "name": "estrai-parole-chiave",
+    "arguments": {
+      "text": "{{query}}"
+    }
+  }
+}

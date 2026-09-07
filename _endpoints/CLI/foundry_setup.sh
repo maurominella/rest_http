@@ -6,92 +6,93 @@
 # Authenticate first with: az login --use-device-code
 # When multiple subscriptions are available, this script selects SUBID explicitly.
 
-### Azure resource configuration. These values are not secrets.
+initialize_configuration() {
+	### Azure resource configuration. These values are not secrets.
+	ID="aifnmdcdnv08"
+	# eca2eddb-0f0c-4351-a634-52751499eeea 5d476556-6599-4792-a97f-4066de1fa86c
+	SUBID="5d476556-6599-4792-a97f-4066de1fa86c"
+	LOCATION="swedencentral"
 
-ID="aif04"
+	# Resource Groups
+	NETWORKING_RG="${ID}_networking_rg"
+	FOUNDRY_RG="${ID}_foundry_rg"
+	RESOURCES_RG="${ID}_resources_rg"
+	JUMPVM_RG="${ID}_jumpvm_rg"
+	DNS_RG="dns-private-rg"
 
-SUBID="eca2eddb-0f0c-4351-a634-52751499eeea"
-LOCATION="swedencentral"
+	### Virtual Network Configuration
+	VNET_NAME="${ID}_vnet"
+	VNET_ADDRESS_PREFIX="192.168.0.0/16"
+	VNET_RESOURCE_ID="/subscriptions/${SUBID}/resourceGroups/${NETWORKING_RG}/providers/Microsoft.Network/virtualNetworks/${VNET_NAME}"
+	FOUNDRY_SUBNET_NAME="foundry_subnet"
+	FOUNDRY_SUBNET_PREFIX="192.168.1.0/24"
+	COGNITIVE_SERVICES_SERVICE_ENDPOINT="Microsoft.CognitiveServices"
+	RESOURCES_SUBNET_NAME="resources_subnet"
+	RESOURCES_SUBNET_PREFIX="192.168.2.0/24"
+	AGENTS_DELEGATED_SUBNET_NAME="agentsdelegated_subnet"
+	AGENTS_DELEGATED_SUBNET_PREFIX="192.168.3.0/24"
+	AGENTS_DELEGATED_SUBNET_RESOURCE_ID="${VNET_RESOURCE_ID}/subnets/${AGENTS_DELEGATED_SUBNET_NAME}"
+	CONTAINER_APPS_SUBNET_DELEGATION="Microsoft.App/environments"
+	PE_SUBNET_NAME="pe_subnet"
+	PE_SUBNET_PREFIX="192.168.4.0/24"
+	JUMP_SUBNET_NAME="jump_subnet"
+	JUMP_SUBNET_PREFIX="192.168.5.0/24"
+	JUMP_VM_SIZE="Standard_DS3_v2"
+	JUMP_VM_IMAGE="MicrosoftWindowsDesktop:windows-11:win11-24h2-pro:latest"
+	PRIVATE_ENDPOINT_API_VERSION="2025-07-01"
+	PRIVATE_ENDPOINT_POLL_INTERVAL_SECONDS=10
+	PRIVATE_ENDPOINT_POLL_TIMEOUT_SECONDS=1800
+	MANAGEMENT_ENDPOINT="https://management.azure.com"
 
-# Resource Groups
-NETWORKING_RG="${ID}_networking_rg"
-FOUNDRY_RG="${ID}_foundry_rg"
-RESOURCES_RG="${ID}_resources_rg"
-JUMPVM_RG="${ID}_jumpvm_rg"
-DNS_RG="dns-private-rg"
+	### Storage Account Configuration
+	STORAGE_ACCOUNT_NAME="${ID}storage"
+	STORAGE_ACCOUNT_SKU="Standard_LRS"
+	STORAGE_PRIVATE_ENDPOINT_NAME="${STORAGE_ACCOUNT_NAME}-pe"
+	STORAGE_PRIVATE_DNS_SUB_TARGET="blob"
+	STORAGE_PRIVATE_DNS_ZONE="privatelink.blob.core.windows.net"
+	STORAGE_PRIVATE_DNS_VNET_LINK_NAME="dns-${STORAGE_ACCOUNT_NAME}-vnetlink"
 
-### Virtual Network Configuration
-VNET_NAME="${ID}_vnet"
-VNET_ADDRESS_PREFIX="192.168.0.0/16"
-VNET_RESOURCE_ID="/subscriptions/${SUBID}/resourceGroups/${NETWORKING_RG}/providers/Microsoft.Network/virtualNetworks/${VNET_NAME}"
-FOUNDRY_SUBNET_NAME="foundry_subnet"
-FOUNDRY_SUBNET_PREFIX="192.168.1.0/24"
-COGNITIVE_SERVICES_SERVICE_ENDPOINT="Microsoft.CognitiveServices"
-RESOURCES_SUBNET_NAME="resources_subnet"
-RESOURCES_SUBNET_PREFIX="192.168.2.0/24"
-AGENTS_DELEGATED_SUBNET_NAME="agentsdelegated_subnet"
-AGENTS_DELEGATED_SUBNET_PREFIX="192.168.3.0/24"
-AGENTS_DELEGATED_SUBNET_RESOURCE_ID="${VNET_RESOURCE_ID}/subnets/${AGENTS_DELEGATED_SUBNET_NAME}"
-CONTAINER_APPS_SUBNET_DELEGATION="Microsoft.App/environments"
-PE_SUBNET_NAME="pe_subnet"
-PE_SUBNET_PREFIX="192.168.4.0/24"
-JUMP_SUBNET_NAME="jump_subnet"
-JUMP_SUBNET_PREFIX="192.168.5.0/24"
-JUMP_VM_SIZE="Standard_DS3_v2"
-JUMP_VM_IMAGE="MicrosoftWindowsDesktop:windows-11:win11-24h2-pro:latest"
-PRIVATE_ENDPOINT_API_VERSION="2025-07-01"
-PRIVATE_ENDPOINT_POLL_INTERVAL_SECONDS=10
-PRIVATE_ENDPOINT_POLL_TIMEOUT_SECONDS=1800
-MANAGEMENT_ENDPOINT="https://management.azure.com"
+	### Azure Cognitive Search Configuration
+	SEARCH_SERVICE_NAME="${ID}-aisearch"
+	SEARCH_SERVICE_SKU="basic"
+	SEARCH_PRIVATE_ENDPOINT_NAME="${SEARCH_SERVICE_NAME}-pe"
+	SEARCH_PRIVATE_DNS_SUB_TARGET="searchService"
+	SEARCH_PRIVATE_DNS_ZONE="privatelink.search.windows.net"
+	SEARCH_PRIVATE_DNS_VNET_LINK_NAME="dns-${SEARCH_SERVICE_NAME}-vnetlink"
+	SEARCH_RESOURCE_ID="/subscriptions/${SUBID}/resourceGroups/${RESOURCES_RG}/providers/Microsoft.Search/searchServices/${SEARCH_SERVICE_NAME}"
 
-### Storage Account Configuration
-STORAGE_ACCOUNT_NAME="${ID}storage"
-STORAGE_ACCOUNT_SKU="Standard_LRS"
-STORAGE_PRIVATE_ENDPOINT_NAME="${STORAGE_ACCOUNT_NAME}-pe"
-STORAGE_PRIVATE_DNS_SUB_TARGET="blob"
-STORAGE_PRIVATE_DNS_ZONE="privatelink.blob.core.windows.net"
-STORAGE_PRIVATE_DNS_VNET_LINK_NAME="dns-${STORAGE_ACCOUNT_NAME}-vnetlink"
+	### Cosmos DB Configuration
+	COSMOSDB_SERVICE_NAME="${ID}-cosmosdb"
+	COSMOSDB_PRIVATE_ENDPOINT_NAME="${COSMOSDB_SERVICE_NAME}-pe"
+	COSMOSDB_PRIVATE_DNS_SUB_TARGET="sql"
+	COSMOSDB_PRIVATE_DNS_ZONE="privatelink.documents.azure.com"
+	COSMOSDB_PRIVATE_DNS_VNET_LINK_NAME="dns-${COSMOSDB_SERVICE_NAME}-vnetlink"
+	COSMOSDB_RESOURCE_ID="/subscriptions/${SUBID}/resourceGroups/${RESOURCES_RG}/providers/Microsoft.DocumentDB/databaseAccounts/${COSMOSDB_SERVICE_NAME}"
 
-### Azure Cognitive Search Configuration
-SEARCH_SERVICE_NAME="${ID}-aisearch"
-SEARCH_SERVICE_SKU="basic"
-SEARCH_PRIVATE_ENDPOINT_NAME="${SEARCH_SERVICE_NAME}-pe"
-SEARCH_PRIVATE_DNS_SUB_TARGET="searchService"
-SEARCH_PRIVATE_DNS_ZONE="privatelink.search.windows.net"
-SEARCH_PRIVATE_DNS_VNET_LINK_NAME="dns-${SEARCH_SERVICE_NAME}-vnetlink"
-SEARCH_RESOURCE_ID="/subscriptions/${SUBID}/resourceGroups/${RESOURCES_RG}/providers/Microsoft.Search/searchServices/${SEARCH_SERVICE_NAME}"
+	### Foundry Service Configuration
+	FOUNDRY_SERVICE_NAME="${ID}-foundry"
+	FOUNDRY_RESOURCE_ID="/subscriptions/${SUBID}/resourceGroups/${FOUNDRY_RG}/providers/Microsoft.CognitiveServices/accounts/${FOUNDRY_SERVICE_NAME}"
+	FOUNDRY_PRIVATE_ENDPOINT_NAME="${FOUNDRY_SERVICE_NAME}-pe"
+	FOUNDRY_PRIVATE_DNS_SUB_TARGET="account"
+	FOUNDRY_COGNITIVE_PRIVATE_DNS_ZONE="privatelink.cognitiveservices.azure.com"
+	FOUNDRY_OPENAI_PRIVATE_DNS_ZONE="privatelink.openai.azure.com"
+	FOUNDRY_SERVICES_PRIVATE_DNS_ZONE="privatelink.services.ai.azure.com"
+	FOUNDRY_COGNITIVE_DNS_VNET_LINK_NAME="dns-${FOUNDRY_SERVICE_NAME}-cognitive-vnetlink"
+	FOUNDRY_OPENAI_DNS_VNET_LINK_NAME="dns-${FOUNDRY_SERVICE_NAME}-openai-vnetlink"
+	FOUNDRY_SERVICES_DNS_VNET_LINK_NAME="dns-${FOUNDRY_SERVICE_NAME}-services-vnetlink"
+	FOUNDRY_PROJECT_NAME="${ID}-project01"
+	FOUNDRY_CAPABILITY_HOST_NAME="agentscaphost"
+	FOUNDRY_API_VERSION="2025-04-01-preview"
+	FOUNDRY_CAPABILITY_HOST_API_VERSION="2025-06-01"
+	FOUNDRY_POLL_INTERVAL_SECONDS=10
+	FOUNDRY_POLL_TIMEOUT_SECONDS=1800
 
-### Cosmos DB Configuration
-COSMOSDB_SERVICE_NAME="${ID}-cosmosdb"
-COSMOSDB_PRIVATE_ENDPOINT_NAME="${COSMOSDB_SERVICE_NAME}-pe"
-COSMOSDB_PRIVATE_DNS_SUB_TARGET="sql"
-COSMOSDB_PRIVATE_DNS_ZONE="privatelink.documents.azure.com"
-COSMOSDB_PRIVATE_DNS_VNET_LINK_NAME="dns-${COSMOSDB_SERVICE_NAME}-vnetlink"
-COSMOSDB_RESOURCE_ID="/subscriptions/${SUBID}/resourceGroups/${RESOURCES_RG}/providers/Microsoft.DocumentDB/databaseAccounts/${COSMOSDB_SERVICE_NAME}"
-
-### Foundry Service Configuration
-FOUNDRY_SERVICE_NAME="${ID}-foundry"
-FOUNDRY_RESOURCE_ID="/subscriptions/${SUBID}/resourceGroups/${FOUNDRY_RG}/providers/Microsoft.CognitiveServices/accounts/${FOUNDRY_SERVICE_NAME}"
-FOUNDRY_PRIVATE_ENDPOINT_NAME="${FOUNDRY_SERVICE_NAME}-pe"
-FOUNDRY_PRIVATE_DNS_SUB_TARGET="account"
-FOUNDRY_COGNITIVE_PRIVATE_DNS_ZONE="privatelink.cognitiveservices.azure.com"
-FOUNDRY_OPENAI_PRIVATE_DNS_ZONE="privatelink.openai.azure.com"
-FOUNDRY_SERVICES_PRIVATE_DNS_ZONE="privatelink.services.ai.azure.com"
-FOUNDRY_COGNITIVE_DNS_VNET_LINK_NAME="dns-${FOUNDRY_SERVICE_NAME}-cognitive-vnetlink"
-FOUNDRY_OPENAI_DNS_VNET_LINK_NAME="dns-${FOUNDRY_SERVICE_NAME}-openai-vnetlink"
-FOUNDRY_SERVICES_DNS_VNET_LINK_NAME="dns-${FOUNDRY_SERVICE_NAME}-services-vnetlink"
-FOUNDRY_PROJECT_NAME="${ID}-project01"
-FOUNDRY_CAPABILITY_HOST_NAME="agentscaphost"
-FOUNDRY_API_VERSION="2025-04-01-preview"
-FOUNDRY_CAPABILITY_HOST_API_VERSION="2025-06-01"
-FOUNDRY_POLL_INTERVAL_SECONDS=10
-FOUNDRY_POLL_TIMEOUT_SECONDS=1800
-
-### Jump VM Configuration
-JUMPVM_NAME="${ID}-jumpvm"
-JUMPVM_USERNAME="mauromi"
-read -rsp "Jump VM password: " JUMPVM_PASSWORD && echo
-
+	### Jump VM Configuration
+	JUMPVM_NAME="${ID}-jumpvm"
+	JUMPVM_USERNAME="mauromi"
+	### read -rsp "Jump VM password: " JUMPVM_PASSWORD && echo
+	JUMPVM_PASSWORD="P@ssw0rd1!P@ssw0rd1!"
+}
 
 ###
 echo() {
@@ -548,9 +549,40 @@ create_private_dns_vnet_link_if_missing() {
 	return 1
 }
 
+ensure_resource_provider_registered() {
+	local provider_namespace="$1"
+	local registration_state
+
+	registration_state="$(az provider show \
+		--namespace "${provider_namespace}" \
+		--subscription "${SUBID}" \
+		--query registrationState \
+		--output tsv \
+		--only-show-errors)" || return 1
+
+	if [[ "${registration_state}" == "Registered" ]]; then
+		return
+	fi
+
+	echo "Registering resource provider '${provider_namespace}' in subscription '${SUBID}'..."
+	if az provider register \
+		--namespace "${provider_namespace}" \
+		--subscription "${SUBID}" \
+		--wait \
+		--only-show-errors; then
+		echo "Resource provider '${provider_namespace}' registered successfully."
+		return
+	fi
+
+	echo "Failed to register resource provider '${provider_namespace}'. Verify that your account can register providers in subscription '${SUBID}'." >&2
+	return 1
+}
+
 create_storage_account_if_missing() {
 	local storage_account_name="$1"
 	local resource_group_name="$2"
+
+	ensure_resource_provider_registered "Microsoft.Storage" || return 1
 
 	if az storage account show \
 		--name "${storage_account_name}" \
@@ -933,6 +965,8 @@ create_foundry_if_missing() {
 	echo "Microsoft Foundry Standard Agent Setup '${service_name}/${project_name}' created successfully."
 }
 
+
+initialize_configuration
 
 create_resource_group_if_missing "${NETWORKING_RG}"
 create_resource_group_if_missing "${FOUNDRY_RG}"

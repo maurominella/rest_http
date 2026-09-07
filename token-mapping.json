@@ -7,14 +7,14 @@
         "app_id": ""
     },
     {
-        "generate_token": "y",
+        "generate_token": "n",
         "token_name": "bearertoken_app-token_for_foundry",
         "token_resource": "https://ai.azure.com/",
         "token_value": "",
         "app_id": "b0cc68f2-87d7-491d-8cc2-60624256126e"
     },
     {
-        "generate_token": "n",
+        "generate_token": "y",
         "token_name": "bearertoken_for_cognitiveservices",
         "token_resource": "https://cognitiveservices.azure.com/",
         "token_value": "",

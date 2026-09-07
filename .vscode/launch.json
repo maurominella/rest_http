@@ -4,10 +4,10 @@
         {
             "type": "bashdb",
             "request": "launch",
-            "name": "Debug current Bash file",
-            "cwd": "${fileDirname}",
-            "program": "${file}",
-            "terminalKind": "integrated",
+            "name": "Debug Foundry setup",
+            "cwd": "${workspaceFolder}/_endpoints/CLI",
+            "program": "${workspaceFolder}/_endpoints/CLI/foundry_setup.sh",
+            "terminalKind": "debugConsole",
             "showDebugOutput": true,
             "args": []
         }
