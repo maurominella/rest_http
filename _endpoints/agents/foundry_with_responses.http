@@ -1,9 +1,11 @@
 # https://foundry7159.services.ai.azure.com/api/projects/aif7159-standard-agent-project, https://mm-ai-upskilling-project-resourc.services.ai.azure.com/api/projects/ai-upskilling-project
 
-@foundry_project_endpoint = https://foundry7159.services.ai.azure.com/api/projects/aif7159-standard-agent-project
+@foundry_project_endpoint = https://mm-ai-upskilling-project-resourc.services.ai.azure.com/api/projects/ai-upskilling-project
 
-# asb-assistant-01 hello-world-python-responses hello-world-responses02
-@agent_name = hello-world-responses02
+# asb-assistant-01 hello-world-python-responses hello-world-responses02 asb-assistant-01
+@agent_name = asb-assistant-01
+
+@agent_version = 4
 
 # Dammi la lista delle cartelle del mio OneDrive, ordinata per dimensione decrescente (in Mb).
 # What is a meaning function? Answer in less than 10 words.
@@ -11,8 +13,8 @@
 @query = Give me the list of my OneDrive folders, sorted by size decreasing (in Mb).
 
 
-# The version of the Foundry Responses API to use. It should be v1 (better and latest) or 2025-11-15-preview
-@version = {{azure_openai_responses_api_version}}
+# {{azure_openai_responses_api_version}} The version of the Foundry Responses API to use. It should be v1 (better and latest) or 2025-11-15-preview
+@version = v1
 
 
 ###
@@ -41,8 +43,34 @@ x-client-user-token: {{bearertoken_for_obo}}
     "input": "{{query}}"
 }
 
+
+
 ###
 
+### invoke the agent directly
+POST https://mm-ai-upskilling-project-resourc.services.ai.azure.com/api/projects/ai-upskilling-project/agents/asb-assistant-01/endpoint/protocols/openai/responses?api-version={{version}}
+Content-Type: application/json
+Authorization: Bearer {{bearertoken_user-token_for_foundry}}
+ 
+{
+    "input": [{"role": "user", "content": "What can you do?"}]
+}
+
+###
+
+### invoke the agent directly, with parameters
+@foundry_agent_endpoint = https://mm-ai-upskilling-project-resourc.services.ai.azure.com/api/projects/ai-upskilling-project/agents/asb-assistant-01/endpoint/protocols/openai/responses
+@query = What can you do?
+
+POST {{foundry_agent_endpoint}}?api-version={{version}}
+Content-Type: application/json
+Authorization: Bearer {{bearertoken_user-token_for_foundry}}
+ 
+{
+    "input": [{"role": "user", "content": "{{query}}"}]
+}
+
+###
 
 az role assignment create --assignee "b0cc68f2-87d7-491d-8cc2-60624256126e" \
   --role "eed3b665-ab3a-47b6-8f48-c9382fb1dad6" \
