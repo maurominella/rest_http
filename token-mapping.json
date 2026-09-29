@@ -7,7 +7,7 @@
         "app_id": ""
     },
     {
-        "generate_token": "n",
+        "generate_token": "y",
         "token_name": "bearertoken_app-token_for_foundry",
         "token_resource": "https://ai.azure.com/",
         "token_value": "",
